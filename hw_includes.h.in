@@ -1,0 +1,5 @@
+/** Hardware includes */
+
+#include "@STM32_FAMILY_LONG_l@xx.h"
+#include "@STM32_FAMILY_LONG_l@xx_hal.h"
+#include "@STM32_FAMILY_LONG_l@xx_ll_gpio.h"
