@@ -10,16 +10,22 @@ SET(${CMAKE_PROJECT_NAME}_LIBS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Libs)
 set(STM32_CHIP            "STM32L151CB"
     CACHE STRING "STM32 chip name")
 
-set(F_CPU                  32000000L
+set(F_CPU                  24000000L
     CACHE STRING "CPU Frequency")
+
+set(F_XTAL                 8000000L
+    CACHE STRING "CPU Quartz resonator fequency")
 
 # Using Maple's linker script that corresponds maple/stm32duino code
 #SET(STM32_LINKER_SCRIPT ${${CMAKE_PROJECT_NAME}_LIBS_DIR}/STM32generic/variants/BLUEPILL/ldscript_bootloader_2000.ld)
 #LINK_DIRECTORIES(${${CMAKE_PROJECT_NAME}_LIBS_DIR}/STM32generic/variants/BLUEPILL/)
 
 # Flash offset due to bootloader
-SET(VECT_TAB_ADDR "0x2000") # TODO: bootloader/direct
-SET(STM32_FLASH_ORIGIN "0x08002000") # TODO: is addr correct?
+set(STM32_FLASH_ORIGIN "0x08000000"
+    CACHE STRING "Flash memory start address")
+
+
+SET(VECT_TAB_ADDR "0x2000")
 
 # Load the toolchain file that uses vars above
 SET(CMAKE_TOOLCHAIN_FILE cmake/gcc_stm32.cmake)
@@ -43,6 +49,7 @@ ADD_DEFINITIONS(
 #	-DUSE_USB_MSC
         -DMCU_${STM32_CHIP}
         -DF_CPU=${F_CPU}
+        -DF_XTAL=${F_XTAL}
 	-DARDUINO=10801
 )
 
