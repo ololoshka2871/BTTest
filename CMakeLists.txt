@@ -16,6 +16,9 @@ set(F_CPU                  24000000L
 set(F_XTAL                 8000000L
     CACHE STRING "CPU Quartz resonator fequency")
 
+set(UART_BAUD               115200
+    CACHE STRING "UART1 BaudRate")
+
 # Using Maple's linker script that corresponds maple/stm32duino code
 #SET(STM32_LINKER_SCRIPT ${${CMAKE_PROJECT_NAME}_LIBS_DIR}/STM32generic/variants/BLUEPILL/ldscript_bootloader_2000.ld)
 #LINK_DIRECTORIES(${${CMAKE_PROJECT_NAME}_LIBS_DIR}/STM32generic/variants/BLUEPILL/)
