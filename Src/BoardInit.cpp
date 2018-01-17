@@ -150,7 +150,7 @@ void Configure_AHB_Clocks() {
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
     HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1);
-    __HAL_FLASH_ACC64_ENABLE();             // enable 64-bit flas access
+    //__HAL_FLASH_ACC64_ENABLE();             // enable 64-bit flas access
 #else
 #error "Unsupported CPU family"
 #endif
@@ -173,6 +173,7 @@ void SystemClock_Config(void)
 
 void InitBoard()
 {
+    // __NVIC_PRIO_BITS - how many prioruty bits avalable
 	HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
 	// Initialize board and HAL
