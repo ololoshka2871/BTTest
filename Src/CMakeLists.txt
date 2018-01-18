@@ -25,8 +25,8 @@ SET(SOURCE_FILES
 #	Screens/SatellitesScreen.h
 #	Screens/Screen.cpp
 #	Screens/Screen.h
-#	Screens/ScreenManager.cpp
-#	Screens/ScreenManager.h
+#       Screens/ScreenManager.cpp
+#       Screens/ScreenManager.h
 #	Screens/SelectorScreen.cpp
 #	Screens/SelectorScreen.h
 #	Screens/SettingsGroupScreen.cpp
@@ -54,10 +54,10 @@ SET(SOURCE_FILES
         PrintUtils.h
 #	SdFatSPIDriver.cpp
 #	SdFatSPIDriver.h
-#	SdMscDriver.cpp
-#	SdMscDriver.h
-#	SDThread.cpp
-#	SDThread.h
+#       SdMscDriver.cpp
+#       SdMscDriver.h
+#       SDThread.cpp
+#       SDThread.h
         SerialDebugLogger.cpp
         SerialDebugLogger.h
 #	TimeFont.cpp
@@ -65,11 +65,16 @@ SET(SOURCE_FILES
 #       USBDebugLogger.cpp
 #       USBDebugLogger.h
         hardfault.cpp
+
+        displaydemo.h
+        displaydemo.cpp
 )
 
 INCLUDE_DIRECTORIES(
 	.
         ${LIBS_DIR}/AdafruitGFX
+        ${LIBS_DIR}/SEPS525-OLED-Library
+        ${LIBS_DIR}/Pin
         ${LIBS_DIR}/SdFat
         ${LIBS_DIR}/STM32generic/libraries/SPI/src
         ${LIBS_DIR}/STM32generic/libraries/FreeRTOS/src
@@ -87,7 +92,9 @@ ADD_EXECUTABLE(${CMAKE_PROJECT_NAME} ${SOURCE_FILES})
 TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME}
 	FreeRTOS
 	SDFAT
+        SEPS525_GFX
 	AdafruitGFX
+        Pin
 	USB
 	STM32generic
 	HAL

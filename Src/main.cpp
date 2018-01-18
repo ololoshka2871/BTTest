@@ -11,11 +11,15 @@
 #include "SerialDebugLogger.h"
 #include "SdMscDriver.h"
 
+#include "displaydemo.h"
+
 void testtaskvoid(void *pvParameters)
 {
     for (;;)
     {
         vTaskDelay(2000);
+
+        serialDebugWrite("USB debug message\n\r");
     }
 }
 
@@ -23,17 +27,25 @@ int main(void)
 {
 	InitBoard();
 
-	initDebugSerial();
+    initDebugSerial();
 
 	portENABLE_INTERRUPTS(); // To allow halt() use HAL_Delay()
 
-    // Set up threads
-    xTaskCreate(testtaskvoid, "Test Thread", configMINIMAL_STACK_SIZE * 2, (void*)0x12345678, tskIDLE_PRIORITY + 1, NULL);
 
+    //initUSB();
+
+    // Set up threads
+    xTaskCreate(testtaskvoid, "Test Thread", configMINIMAL_STACK_SIZE * 2, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(DisplayDemo::vDisplayDemoThreadFunc, "Display Task", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
 
 	// Run scheduler and all the threads
 	vTaskStartScheduler();
 
 	// Never going to be here
 	return 0;
+}
+
+// halt weak
+__attribute__((weak)) void halt(uint8_t status) {
+    while (1) ;
 }

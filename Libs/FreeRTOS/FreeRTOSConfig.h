@@ -168,6 +168,7 @@ header file. */
 standard names. */
 #define vPortSVCHandler SVC_Handler
 #define xPortPendSVHandler PendSV_Handler
+// FIXME: Ломается если включить USB
 #define xPortSysTickHandler SysTick_Handler // HAL_SYSTICK_Callback
 
 #endif /* FREERTOS_CONFIG_H */

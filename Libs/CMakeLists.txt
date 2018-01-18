@@ -111,7 +111,35 @@ ADD_LIBRARY(FreeRTOS STATIC ${FREERTOS_SRC})
 ###################
 
 ADD_LIBRARY(AdafruitGFX STATIC
-        AdafruitGFX/Adafruit_GFX.cpp
+    AdafruitGFX/Adafruit_GFX.cpp
+)
+
+###################
+# Pin
+###################
+
+ADD_LIBRARY(Pin STATIC
+    Pin/Pin.cpp
+    Pin/Pin.h
+)
+
+TARGET_INCLUDE_DIRECTORIES(Pin PRIVATE
+    STM32generic/system/${STM32_FAMILY_LONG}/stm32_chip
+)
+
+###################
+# SEPS525 driver
+###################
+
+ADD_LIBRARY(SEPS525_GFX STATIC
+    SEPS525-OLED-Library/SEPS525_OLED.cpp
+    SEPS525-OLED-Library/SEPS525_OLED.h
+)
+
+TARGET_INCLUDE_DIRECTORIES(SEPS525_GFX PRIVATE
+    AdafruitGFX
+    Pin
+    SEPS525-OLED-Library
 )
 
 ###################

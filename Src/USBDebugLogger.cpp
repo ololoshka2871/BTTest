@@ -2,7 +2,7 @@
 #include <usbd_msc_cdc.h>
 #include <usbd_desc.h>
 
-#include <stm32f1xx_ll_gpio.h>
+#include "hw_includes.h"
 
 #include <string.h> // strlen
 #include <stdarg.h> // VA
@@ -30,18 +30,27 @@ extern PCD_HandleTypeDef hpcd_USB_FS;
 
 void reenumerateUSB()
 {
-	// Initialize PA12 pin
-	LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_12, LL_GPIO_MODE_OUTPUT);
-	LL_GPIO_SetPinOutputType(GPIOA, LL_GPIO_PIN_12, LL_GPIO_OUTPUT_PUSHPULL);
-	LL_GPIO_SetPinSpeed(GPIOA, LL_GPIO_PIN_12, LL_GPIO_SPEED_FREQ_LOW);
+#if defined(STM32F1)
+    // Initialize PA12 pin
+    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_12, LL_GPIO_MODE_OUTPUT);
+    LL_GPIO_SetPinOutputType(GPIOA, LL_GPIO_PIN_12, LL_GPIO_OUTPUT_PUSHPULL);
+    LL_GPIO_SetPinSpeed(GPIOA, LL_GPIO_PIN_12, LL_GPIO_SPEED_FREQ_LOW);
 
-	// Let host know to enumerate USB devices on the bus
-	LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_12);
-	HAL_Delay(200);
+    // Let host know to enumerate USB devices on the bus
+    LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_12);
+    HAL_Delay(200);
 
-	// Restore pin mode
-	LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_12, LL_GPIO_MODE_FLOATING);
-	HAL_Delay(200);
+    // Restore pin mode
+    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_12, LL_GPIO_MODE_FLOATING);
+    HAL_Delay(200);
+#elif defined(STM32L1)
+    LL_SYSCFG_EnableUSBPullUp();
+    HAL_Delay(200);
+    LL_SYSCFG_DisableUSBPullUp();
+    HAL_Delay(200);
+#else
+#   error "Unsupported cpu family"
+#endif
 }
 
 void initUSB()

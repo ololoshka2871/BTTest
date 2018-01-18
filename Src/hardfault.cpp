@@ -49,7 +49,8 @@ of this function. */
     psr = pulFaultStackAddress[ 7 ];
 
     /* When the following line is hit, the variables contain the register values. */
-    for( ;; );
+    for( ;; )
+        __asm__("BKPT");
 }
 
 }

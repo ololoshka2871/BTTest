@@ -91,6 +91,7 @@
 #define USBD_INTERFACE_STRING_FS     "MSC Interface"
 #else
 #define USBD_VID						0x1EAF
+#define USBD_PID						0x0004
 #define USBD_LANGID_STRING				0x409
 #define USBD_MANUFACTURER_STRING		"Leaf Labs"
 #define USBD_PID_FS						0x0004

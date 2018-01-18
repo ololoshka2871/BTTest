@@ -3,9 +3,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
 # Always build in release as it uses -Os
 SET(CMAKE_BUILD_TYPE Release)
 
-# Handy path variables used in this script and passed to submodules
-SET(${CMAKE_PROJECT_NAME}_LIBS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Libs)
-
 # All compiler related stuff is defined in the toolchain file
 set(STM32_CHIP            "STM32L151CB"
     CACHE STRING "STM32 chip name")
@@ -35,10 +32,13 @@ SET(CMAKE_TOOLCHAIN_FILE cmake/gcc_stm32.cmake)
 INCLUDE(cmake/halpers.cmake)
 
 # Project definition
-PROJECT(FakeHeller)
+PROJECT(Rikta)
 
 # Misc stuff
 ENABLE_LANGUAGE(ASM)
+
+# Handy path variables used in this script and passed to submodules
+SET(${CMAKE_PROJECT_NAME}_LIBS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Libs)
 
 STM32_GET_FAMITY_X(${STM32_CHIP} STM32_FAMILY_X)
 SET(STM32_FAMILY_LONG STM32${STM32_FAMILY})
@@ -48,11 +48,11 @@ ADD_DEFINITIONS(
         -D${STM32_FAMILY_LONG}
         -D${STM32_CHIP}
         -D${STM32_FAMILY_X}
-	-DUSE_USB_COMPOSITE
+#	-DUSE_USB_COMPOSITE
 #	-DUSE_USB_MSC
         -DMCU_${STM32_CHIP}
         -DF_CPU=${F_CPU}
-        -DF_XTAL=${F_XTAL}
+        -DHSE_VALUE=${F_XTAL}
 	-DARDUINO=10801
 )
 

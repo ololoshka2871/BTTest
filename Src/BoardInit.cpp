@@ -47,10 +47,10 @@ constexpr sDiv_Mul calc_pll_div_mul(const uint32_t div_mul) {
 void InitOSC() {
     RCC_OscInitTypeDef RCC_OscInitStruct;
 #if defined(STM32F1)
-    // F_XTAL -> PREDIV1 ->  PLLMUL * 2 -> USB prescaler => USB_CLK_TARGET
+    // HSE_VALUE -> PREDIV1 ->  PLLMUL * 2 -> USB prescaler => USB_CLK_TARGET
     //                   `-> PLLMUL => F_CPU
 
-    // PREDIV1 / PLLMUL = F_CPU / F_XTAL
+    // PREDIV1 / PLLMUL = F_CPU / HSE_VALUE
     // USB prescaler = F_CPU * 2 / USB_CLK_TARGET
 
 #   define __USB_PRE   (F_CPU * 2 / USB_CLK_TARGET)
@@ -75,18 +75,18 @@ void InitOSC() {
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
 
-    constexpr auto div_mul = calc_pll_div_mul(F_CPU / F_XTAL);
+    constexpr auto div_mul = calc_pll_div_mul(F_CPU / HSE_VALUE);
     RCC_OscInitStruct.HSEPredivValue = div_mul.div;
     RCC_OscInitStruct.PLL.PLLMUL = div_mul.mul;
 
 #elif defined(STM32L1)
-    // F_XTAL -> PLLMUL =>  USB_CLK_TARGET
+    // HSE_VALUE -> PLLMUL =>  USB_CLK_TARGET
     //                  `-> PLLDIV => F_CPU
 
-    // PLLMUL = USB_CLK_TARGET / F_XTAL
+    // PLLMUL = USB_CLK_TARGET / HSE_VALUE
     // PLLDIV = USB_CLK_TARGET / F_CPU
 
-#   define __PLLMUL     (USB_CLK_TARGET / F_XTAL)
+#   define __PLLMUL     (USB_CLK_TARGET / HSE_VALUE)
 #   if __PLLMUL == 3
 #       define _PLLMUL  RCC_PLL_MUL3
 #   elif __PLLMUL == 4
@@ -106,7 +106,7 @@ void InitOSC() {
 #   elif __PLLMUL == 48
 #       define _PLLMUL  RCC_PLL_MUL48
 #   else
-#       error "Correct value of RCC_PLL_MUL not found, check F_XTAL value"
+#       error "Correct value of RCC_PLL_MUL not found, check HSE_VALUE value"
 #   endif
 
 #   define __PLLDIV     (USB_CLK_TARGET / F_CPU)
