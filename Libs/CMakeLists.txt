@@ -151,10 +151,6 @@ TARGET_INCLUDE_DIRECTORIES(SEPS525_GFX PRIVATE
 SET(STM32GENERIC_SRC
         STM32generic/libraries/SPI/src/SPI.cpp
         STM32generic/libraries/stm32_dma/src/stm32_dma.c
-        STM32generic/cores/arduino/stm32/stm32_gpio_af.c
-        STM32generic/cores/arduino/stm32/stm32_gpio.c
-        STM32generic/cores/arduino/stm32/stm32_PWM.c
-        STM32generic/cores/arduino/stm32/stm32_pin_list.c
 
 	STM32generic/cores/arduino/abi.cpp
 #	STM32generic/cores/arduino/Arduino.h
@@ -185,16 +181,16 @@ SET(STM32GENERIC_SRC
 ##	STM32generic/cores/arduino/stm32/stm32_build_defines.h
 #	STM32generic/cores/arduino/stm32/stm32_clock.h
 ##	STM32generic/cores/arduino/stm32/stm32_def.h
-#	STM32generic/cores/arduino/stm32/stm32_gpio.c
-#	STM32generic/cores/arduino/stm32/stm32_gpio.h
-#	STM32generic/cores/arduino/stm32/stm32_gpio_af.c
-#	STM32generic/cores/arduino/stm32/stm32_gpio_af.h
-##	STM32generic/cores/arduino/stm32/stm32_gpio_af_F0F2F3F4F7L0L1L4.c
-#	STM32generic/cores/arduino/stm32/stm32_gpio_af_F1.c
+        STM32generic/cores/arduino/stm32/stm32_gpio.c
+        STM32generic/cores/arduino/stm32/stm32_gpio.h
+        STM32generic/cores/arduino/stm32/stm32_gpio_af.c
+        STM32generic/cores/arduino/stm32/stm32_gpio_af.h
+        STM32generic/cores/arduino/stm32/stm32_gpio_af_F0F2F3F4F7L0L1L4.c
+        STM32generic/cores/arduino/stm32/stm32_gpio_af_F1.c
 #	STM32generic/cores/arduino/stm32/stm32_gpio_exti.c
-	STM32generic/cores/arduino/stm32/stm32_init.c
-#	STM32generic/cores/arduino/stm32/stm32_pin_list.c
-#	STM32generic/cores/arduino/stm32/stm32_PWM.c
+        STM32generic/cores/arduino/stm32/stm32_init.c # SysTick_Handler THERE!
+        STM32generic/cores/arduino/stm32/stm32_pin_list.c
+        STM32generic/cores/arduino/stm32/stm32_PWM.c
 #	STM32generic/cores/arduino/stm32/USBDevice.cpp
 #	STM32generic/cores/arduino/stm32/USBDevice.h
  
@@ -225,16 +221,6 @@ SET(STM32GENERIC_SRC
 #	STM32generic/variants/BLUEPILL/systemclock_config.c
 	STM32generic/variants/BLUEPILL/variant.h
 )
-
-IF(${STM32_CHIP} STREQUAL "STM32F1")
-LIST(APPEND STM32GENERIC_SRC
-    STM32generic/cores/arduino/stm32/stm32_gpio_af_F1.c
-)
-ELSE()
-LIST(APPEND STM32GENERIC_SRC
-    STM32generic/cores/arduino/stm32/stm32_gpio_af_F0F2F3F4F7L0L1L4.c
-)
-ENDIF()
 
 ADD_LIBRARY(STM32generic STATIC ${STM32GENERIC_SRC})
 
