@@ -19,6 +19,10 @@
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
 
+#define _MOSI    PA7
+#define _MISO    PA6
+#define _SCK     PA5
+
 class IO_Pin : public Pin {
 public:
     IO_Pin(GPIO_TypeDef *port = GPIOA, uint32_t pin_msk = LL_GPIO_PIN_1) : Pin() {
@@ -35,13 +39,12 @@ public:
             return D_OUTPUT;
         else
             switch (LL_GPIO_GetPinPull(port, pin)) {
-            case LL_GPIO_PULL_NO:
-                return D_INPUT;
             case LL_GPIO_PULL_UP:
                 return static_cast<Pin::Direction>(D_INPUT | D_PULL_UP);
             case LL_GPIO_PULL_DOWN:
                 return static_cast<Pin::Direction>(D_INPUT | D_PULL_DOWN);
-            default: return static_cast<Pin::Direction>(0);
+            default:
+                return D_INPUT;
             }
     }
 
@@ -70,7 +73,7 @@ private:
 void DisplayDemo::vDisplayDemoThreadFunc(void *pvParameters)
 {
     auto d = new SEPS525_OLED(
-            new SPIClass(SPI1),
+            new SPIClass(SPI1, _MOSI, _MISO, _SCK),
             new IO_Pin(GPIOB, LL_GPIO_PIN_10), // RS
             new IO_Pin(GPIOA, LL_GPIO_PIN_4), // SS
             new IO_Pin(GPIOB, LL_GPIO_PIN_11), // Reset

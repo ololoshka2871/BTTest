@@ -1,4 +1,4 @@
-# ShabashaSTM32L151CB
+# Rikta
 STM32-Arduino-based 
 Based on https://github.com/grafalex82/GPSLogger
 

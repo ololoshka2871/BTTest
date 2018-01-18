@@ -23,7 +23,7 @@ private:
     SPIClass* SPI;
 
     void seps525_init();
-    void seps525_setup();
+    void setup();
 
     void reg(int idx, int value);
     inline void datastart(void);

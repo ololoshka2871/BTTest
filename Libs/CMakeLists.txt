@@ -395,7 +395,7 @@ SET(HAL_SRC
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_sd.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_smartcard.c
         STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_spi.c
-        #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_spi_ex.c
+        STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_spi_ex.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_sram.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_tim.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_tim_ex.c

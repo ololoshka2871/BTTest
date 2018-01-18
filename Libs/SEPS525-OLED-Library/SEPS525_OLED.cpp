@@ -47,12 +47,13 @@ void SEPS525_OLED::set_region(int x, int y, int xs, int ys)
     reg(0x21,y);
 }
 
-void SEPS525_OLED::seps525_setup(void)
+void SEPS525_OLED::setup(void)
 {
     SPI->begin();
-    SPI->setBitOrder(MSBFIRST);
-    SPI->setDataMode(SPI_MODE3);
-    SPI->setClockDivider(SPI_CLOCK_DIV2);
+    SPI->beginTransaction(SPISettings(24000000UL, MSBFIRST, SPI_MODE3));
+    //SPI->setBitOrder(MSBFIRST);
+    //SPI->setDataMode(SPI_MODE3);
+    //SPI->setClockDivider(SPI_CLOCK_DIV2);
 
     // pin for switcher enable (off by default)
     pinVddEnable->setDirection(Pin::D_OUTPUT);
@@ -70,7 +71,7 @@ void SEPS525_OLED::seps525_setup(void)
 
 void SEPS525_OLED::seps525_init(void)
 {
-    seps525_setup();
+    setup();
 
     // NOTE: this procedure is from Densitron
     // DD-160128FC-2B datasheet
