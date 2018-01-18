@@ -4,6 +4,8 @@
 
 #include <SEPS525_OLED.h>
 #include <Pin.h>
+#include <SPI.h>
+#include "hw_includes.h"
 
 #include "displaydemo.h"
 #include "SerialDebugLogger.h"
@@ -19,39 +21,62 @@
 
 class IO_Pin : public Pin {
 public:
-    IO_Pin() : Pin() {}
+    IO_Pin(GPIO_TypeDef *port = GPIOA, uint32_t pin_msk = LL_GPIO_PIN_1) : Pin() {
+        this->port = port;
+        this->pin = pin_msk;
+    }
     bool value() const {
-
+        return !!LL_GPIO_IsInputPinSet(port, pin);
     }
 
     Direction direction() const {
-
+        uint32_t mode = LL_GPIO_GetPinMode(port, pin);
+        if (mode == LL_GPIO_MODE_OUTPUT)
+            return D_OUTPUT;
+        else
+            switch (LL_GPIO_GetPinPull(port, pin)) {
+            case LL_GPIO_PULL_NO:
+                return D_INPUT;
+            case LL_GPIO_PULL_UP:
+                return static_cast<Pin::Direction>(D_INPUT | D_PULL_UP);
+            case LL_GPIO_PULL_DOWN:
+                return static_cast<Pin::Direction>(D_INPUT | D_PULL_DOWN);
+            default: return static_cast<Pin::Direction>(0);
+            }
     }
 
-    void setDirection(Direction) {
-
+    void setDirection(Direction dir) {
+        LL_GPIO_SetPinMode(port, pin, dir & D_OUTPUT ? LL_GPIO_MODE_OUTPUT : LL_GPIO_MODE_INPUT);
+        if (!(dir & D_OUTPUT))
+            LL_GPIO_SetPinPull(port, pin, dir & D_PULL_UP ?
+                                   LL_GPIO_PULL_UP : dir & D_PULL_DOWN ?
+                                       LL_GPIO_PULL_UP : LL_GPIO_PULL_NO);
     }
 
-    void setValue(bool) {
-
+    void setValue(bool v) {
+        if (direction() & D_OUTPUT) {
+            if (v)
+                LL_GPIO_SetOutputPin(port, pin);
+            else
+                LL_GPIO_ResetOutputPin(port, pin);
+        }
     }
+private:
+    GPIO_TypeDef *port;
+    uint32_t pin;
 };
 
 
-static uint16_t color565(uint8_t r, uint8_t g, uint8_t b)
-{
-    return (r << 11) | (g << 5) | b;
-}
-
-DisplayDemo::DisplayDemo() :
-    display(new SEPS525_OLED(new IO_Pin(), new IO_Pin(), new IO_Pin(), new IO_Pin()))
-{
-
-}
-
 void DisplayDemo::vDisplayDemoThreadFunc(void *pvParameters)
 {
-    DisplayDemo demo;
+    auto d = new SEPS525_OLED(
+            new SPIClass(SPI1),
+            new IO_Pin(GPIOB, LL_GPIO_PIN_10), // RS
+            new IO_Pin(GPIOA, LL_GPIO_PIN_4), // SS
+            new IO_Pin(GPIOB, LL_GPIO_PIN_11), // Reset
+            new DummyPin()); // pinVddEnable
+    d->begin();
+    DisplayDemo demo(d);
 
     int counter = 0;
     unsigned long time;
@@ -237,7 +262,7 @@ unsigned long DisplayDemo::testTriangles() {
                     cx    , cy - i, // peak
                     cx - i, cy + i, // bottom left
                     cx + i, cy + i, // bottom right
-                    color565(0, 0, i));
+                    SEPS525_OLED::color565(0, 0, i));
     }
 
     return micros() - start;
@@ -253,10 +278,10 @@ unsigned long DisplayDemo::testFilledTriangles() {
     for(i=min(cx,cy); i>10; i-=5) {
         start = micros();
         display->fillTriangle(cx, cy - i, cx - i, cy + i, cx + i, cy + i,
-                         color565(0, i, i));
+                              SEPS525_OLED::color565(0, i, i));
         t += micros() - start;
         display->drawTriangle(cx, cy - i, cx - i, cy + i, cx + i, cy + i,
-                         color565(i, i, 0));
+                              SEPS525_OLED::color565(i, i, 0));
     }
 
     return t;
@@ -273,7 +298,7 @@ unsigned long DisplayDemo::testRoundRects() {
     start = micros();
     for(i=0; i<w; i+=6) {
         i2 = i / 2;
-        display->drawRoundRect(cx-i2, cy-i2, i, i, i/8, color565(i, 0, 0));
+        display->drawRoundRect(cx-i2, cy-i2, i, i, i/8, SEPS525_OLED::color565(i, 0, 0));
     }
 
     return micros() - start;
@@ -289,7 +314,7 @@ unsigned long DisplayDemo::testFilledRoundRects() {
     start = micros();
     for(i=min(display->width(), display->height()); i>20; i-=6) {
         i2 = i / 2;
-        display->fillRoundRect(cx-i2, cy-i2, i, i, i/8, color565(0, i, 0));
+        display->fillRoundRect(cx-i2, cy-i2, i, i, i/8, SEPS525_OLED::color565(0, i, 0));
     }
 
     return micros() - start;

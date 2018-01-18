@@ -68,6 +68,7 @@ SET(SOURCE_FILES
 
         displaydemo.h
         displaydemo.cpp
+        cpp_new_hook.cpp
 )
 
 INCLUDE_DIRECTORIES(
@@ -90,15 +91,17 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --specs=nosys.specs")
 
 ADD_EXECUTABLE(${CMAKE_PROJECT_NAME} ${SOURCE_FILES})
 TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME}
-	FreeRTOS
-	SDFAT
+        -Wl,--start-group
+        FreeRTOS
+        SDFAT
         SEPS525_GFX
-	AdafruitGFX
+        AdafruitGFX
         Pin
-	USB
-	STM32generic
-	HAL
-	m
+        USB
+        STM32generic
+        HAL
+        m
+        -Wl,--end-group
 )
 
 TARGET_COMPILE_DEFINITIONS(${CMAKE_PROJECT_NAME} PRIVATE

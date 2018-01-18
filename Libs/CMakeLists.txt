@@ -84,7 +84,8 @@ SET(FREERTOS_SRC
 	FreeRTOS/Arduino_FreeRTOS.h
 	FreeRTOS/FreeRTOS.h
 	FreeRTOS/FreeRTOSConfig.h
-	FreeRTOS/heap_1.c
+        #FreeRTOS/heap_1.c
+        FreeRTOS/heap_4.c
 	FreeRTOS/list.c
 	FreeRTOS/list.h
 	FreeRTOS/mpu_prototypes.h
@@ -140,6 +141,7 @@ TARGET_INCLUDE_DIRECTORIES(SEPS525_GFX PRIVATE
     AdafruitGFX
     Pin
     SEPS525-OLED-Library
+    STM32generic/libraries/SPI/src
 )
 
 ###################
@@ -147,6 +149,13 @@ TARGET_INCLUDE_DIRECTORIES(SEPS525_GFX PRIVATE
 ###################
 
 SET(STM32GENERIC_SRC
+        STM32generic/libraries/SPI/src/SPI.cpp
+        STM32generic/libraries/stm32_dma/src/stm32_dma.c
+        STM32generic/cores/arduino/stm32/stm32_gpio_af.c
+        STM32generic/cores/arduino/stm32/stm32_gpio.c
+        STM32generic/cores/arduino/stm32/stm32_PWM.c
+        STM32generic/cores/arduino/stm32/stm32_pin_list.c
+
 	STM32generic/cores/arduino/abi.cpp
 #	STM32generic/cores/arduino/Arduino.h
 ##	STM32generic/cores/arduino/hooks.c
@@ -217,10 +226,21 @@ SET(STM32GENERIC_SRC
 	STM32generic/variants/BLUEPILL/variant.h
 )
 
+IF(${STM32_CHIP} STREQUAL "STM32F1")
+LIST(APPEND STM32GENERIC_SRC
+    STM32generic/cores/arduino/stm32/stm32_gpio_af_F1.c
+)
+ELSE()
+LIST(APPEND STM32GENERIC_SRC
+    STM32generic/cores/arduino/stm32/stm32_gpio_af_F0F2F3F4F7L0L1L4.c
+)
+ENDIF()
+
 ADD_LIBRARY(STM32generic STATIC ${STM32GENERIC_SRC})
 
 TARGET_INCLUDE_DIRECTORIES(STM32generic PRIVATE
         STM32generic/system/${STM32_FAMILY_LONG}/stm32_chip
+        STM32generic/libraries/stm32_dma/src
 )
 
 TARGET_COMPILE_DEFINITIONS(STM32generic PRIVATE
@@ -368,7 +388,7 @@ SET(HAL_SRC
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_eth.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_flash.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_flash_ex.c
-        #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_gpio.c
+        STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_gpio.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_gpio_ex.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_hcd.c
         STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_i2c.c

@@ -39,7 +39,7 @@ int main(void)
     xTaskCreate(DisplayDemo::vDisplayDemoThreadFunc, "Display Task", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
 
 	// Run scheduler and all the threads
-	vTaskStartScheduler();
+    vTaskStartScheduler();
 
 	// Never going to be here
 	return 0;

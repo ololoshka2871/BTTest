@@ -6,7 +6,7 @@ class Adafruit_GFX;
 class DisplayDemo
 {
 private:
-    DisplayDemo();
+    DisplayDemo(Adafruit_GFX *display) : display(display) {}
 
 public:
     static void vDisplayDemoThreadFunc(void* pvParameters);

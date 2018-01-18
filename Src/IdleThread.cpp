@@ -46,5 +46,5 @@ float getMaxCPULoad()
 
 extern "C" void yield()
 {
-	//taskYIELD();
+    taskYIELD();
 }

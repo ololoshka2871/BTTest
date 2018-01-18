@@ -3,10 +3,11 @@
 class Pin {
 public:
     enum Direction {
-        D_INPUT,
-        D_OUTPUT,
-        D_PULL_UP,
-        D_PULL_DOWN,
+        D_INPUT = 0,
+        D_OUTPUT = 1,
+        D_PULL_UP = 1 << 1,
+        D_PULL_DOWN = 1 << 2,
+        D_PULL = D_PULL_UP | D_PULL_DOWN
     };
 
     virtual bool value() const = 0;
