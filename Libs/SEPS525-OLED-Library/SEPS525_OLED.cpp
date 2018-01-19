@@ -50,23 +50,23 @@ void SEPS525_OLED::set_region(int x, int y, int xs, int ys)
 void SEPS525_OLED::setup(void)
 {
     SPI->begin();
-    SPI->beginTransaction(SPISettings(24000000UL, MSBFIRST, SPI_MODE3));
+    SPI->beginTransaction(SPISettings(48000000UL, MSBFIRST, SPI_MODE3)); // Fixme
     //SPI->setBitOrder(MSBFIRST);
     //SPI->setDataMode(SPI_MODE3);
     //SPI->setClockDivider(SPI_CLOCK_DIV2);
 
     // pin for switcher enable (off by default)
-    pinVddEnable->setDirection(Pin::D_OUTPUT);
     pinVddEnable->setValue(HIGH);
+    pinVddEnable->setDirection(Pin::D_OUTPUT);
 
     // pins for seps525
-    pinRS->setDirection(Pin::D_OUTPUT);
-    pinSS->setDirection(Pin::D_OUTPUT);
-    pinReset->setDirection(Pin::D_OUTPUT);
-
     pinRS->setValue(HIGH);
     pinSS->setValue(HIGH);
     pinReset->setValue(HIGH);
+
+    pinRS->setDirection(Pin::D_OUTPUT);
+    pinSS->setDirection(Pin::D_OUTPUT);
+    pinReset->setDirection(Pin::D_OUTPUT);
 }
 
 void SEPS525_OLED::seps525_init(void)
@@ -80,7 +80,7 @@ void SEPS525_OLED::seps525_init(void)
     delay(2);
     pinReset->setValue(HIGH);
     delay(1);
-#if 0
+
     // display off, analog reset
     reg(0x04, 0x01);
     delay(1);
@@ -142,74 +142,6 @@ void SEPS525_OLED::seps525_init(void)
     delay(100);
 
     reg(0x06, 0x01);
-#else
-    reg(0x04, 0x03); // disable osc and reset
-    delay(2);
-    reg(0x04, 0x04 /*0x00*/); // normal mode
-    delay(2);
-
-    reg(0x3b, 0x00); // screensaver off
-
-    reg(0x02, 0x01); // internal oscilator uses external resistor, enable
-
-    reg(0x03, 0x90); // no clock division, 120FPS
-
-    reg(0x80, 0x01); // Reference voltage controlled by internal resister
-
-    reg(0x08, 0x04); // 4 Precharge Time (Clk)  (R)
-    reg(0x09, 0x05); // 5 Precharge Time (Clk)  (G)
-    reg(0x0a, 0x05); // 5 Precharge Time (Clk)  (B)
-
-    // Precharge current v*8uA
-    reg(0x0b, 0x9D); // R
-    reg(0x0c, 0x8C); // G
-    reg(0x0d, 0x57); // B
-
-    // driving current v * 1uA
-    reg(0x10, 0x56); // R
-    reg(0x11, 0x4D); // G
-    reg(0x12, 0x46); // B
-
-
-    reg(0x13, 0x00);// NO RGB Swap
-                    // Row scan: 0->127
-                    // Column dir: 0 -> 159
-                    // no split screen mode
-                    // DC - devault
-
-    reg(0x14, 0x01);// 18_Bit RGB interface (MPU)
-
-    reg(0x16, 0x66); // Dual transfer, 65k support
-                     // autoincrement horisontal adress
-                     // autoincrement vertical adress
-                     // The data is continuously written horizontally
-
-    reg(0x20, 0x00); // reset addr to write to
-    reg(0x21, 0x00);
-
-    reg(0x28, 0x7f); // Display duty ratio (127)
-
-    reg(0x29, 0x00); // Display start line
-
-    reg(0x06, 0x01); // Turns the display on
-
-    //reg(0x05, 0x00); // cansel soft reset (for why?)
-
-    reg(0x15, 0x00);// VSYNCO disable
-                    // Dot clock polarity: sampled at rising edge
-                    // Enable polarity(0 : active low).
-
-    set_region(0, 0, width(), height());
-
-    datastart();
-    int n;
-    for(n = 0; n < 160*128; n++) {
-        data(0xffff);
-    }
-    dataend();
-
-    pinVddEnable->setValue(LOW);
-#endif
 }
 
 SEPS525_OLED::SEPS525_OLED(SPIClass *spi, Pin* pinRS, Pin* pinSS, Pin* pinReset, Pin* pinVddEnable) : Adafruit_GFX(160, 128)

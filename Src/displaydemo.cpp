@@ -66,12 +66,10 @@ public:
     }
 
     void setValue(bool v) {
-        if (direction() & D_OUTPUT) {
-            if (v)
-                LL_GPIO_SetOutputPin(port, pin);
-            else
-                LL_GPIO_ResetOutputPin(port, pin);
-        }
+        if (v)
+            LL_GPIO_SetOutputPin(port, pin);
+        else
+            LL_GPIO_ResetOutputPin(port, pin);
     }
 private:
     GPIO_TypeDef *port;
@@ -82,11 +80,11 @@ private:
 void DisplayDemo::vDisplayDemoThreadFunc(void *pvParameters)
 {
     auto d = new SEPS525_OLED(
-            new SPIClass(SPI1, _MOSI, _MISO, _SCK),
-            new IO_Pin(GPIOB, LL_GPIO_PIN_10), // RS B10
-            new IO_Pin(GPIOA, LL_GPIO_PIN_4), // SS
-            new IO_Pin(GPIOB, LL_GPIO_PIN_11), // Reset
-            new DummyPin()); // pinVddEnable
+                new SPIClass(SPI1/*, _MOSI, _MISO, _SCK*/),
+                new IO_Pin(GPIOB, LL_GPIO_PIN_10), // RS B10
+                new IO_Pin(GPIOA, LL_GPIO_PIN_4), // SS
+                new IO_Pin(GPIOB, LL_GPIO_PIN_11), // Reset
+                new DummyPin()); // pinVddEnable
     d->begin();
     DisplayDemo demo(d);
 
@@ -340,8 +338,29 @@ unsigned long DisplayDemo::playDemo(int demo)
     switch (demo) {
     case 0:
         return testFillScreen();
+    case 1:
+        return testText();
+    case 2:
+        return testLines(CYAN);
+    case 3:
+        return testFastLines(RED, BLUE);
+    case 4:
+        return testRects(GREEN);
+    case 5:
+        return testFilledRects(YELLOW, MAGENTA);
+    case 6:
+        return testFilledCircles(10, MAGENTA);
+    case 7:
+        return testCircles(10, WHITE);
+    case 8:
+        return testTriangles();
+    case 9:
+        return testFilledTriangles();
+    case 10:
+        return testRoundRects();
+    case 11:
+        return testFilledRoundRects();
     default:
-        break;
+        return 0;
     }
-    return demo;
 }
