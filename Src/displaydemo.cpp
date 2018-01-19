@@ -28,7 +28,16 @@ public:
     IO_Pin(GPIO_TypeDef *port = GPIOA, uint32_t pin_msk = LL_GPIO_PIN_1) : Pin() {
         this->port = port;
         this->pin = pin_msk;
+
+        if (port == GPIOA)
+            __HAL_RCC_GPIOA_CLK_ENABLE();
+        else if(port == GPIOB)
+            __HAL_RCC_GPIOB_CLK_ENABLE();
+
+        LL_GPIO_SetPinOutputType(port, pin, LL_GPIO_OUTPUT_PUSHPULL);
+        setDirection(D_INPUT);
     }
+
     bool value() const {
         return !!LL_GPIO_IsInputPinSet(port, pin);
     }
@@ -74,7 +83,7 @@ void DisplayDemo::vDisplayDemoThreadFunc(void *pvParameters)
 {
     auto d = new SEPS525_OLED(
             new SPIClass(SPI1, _MOSI, _MISO, _SCK),
-            new IO_Pin(GPIOB, LL_GPIO_PIN_10), // RS
+            new IO_Pin(GPIOB, LL_GPIO_PIN_10), // RS B10
             new IO_Pin(GPIOA, LL_GPIO_PIN_4), // SS
             new IO_Pin(GPIOB, LL_GPIO_PIN_11), // Reset
             new DummyPin()); // pinVddEnable
