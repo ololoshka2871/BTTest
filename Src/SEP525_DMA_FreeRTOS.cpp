@@ -1,0 +1,52 @@
+#include "SEP525_DMA_FreeRTOS.h"
+
+#include <task.h>
+#include <Pin.h>
+#include <SPI.h>
+#include "io_pin.h"
+
+SemaphoreHandle_t SEP525_DMA_FreeRTOS::mutex;
+SEP525_DMA_FreeRTOS *SEP525_DMA_FreeRTOS::inst;
+
+SEP525_DMA_FreeRTOS::SEP525_DMA_FreeRTOS() : SEPS525_OLED(
+                                                 new SPIClass(SPI1),
+                                                 new IO_Pin(GPIOB, LL_GPIO_PIN_10), // RS B10
+                                                 new IO_Pin(GPIOA, LL_GPIO_PIN_4), // SS
+                                                 new IO_Pin(GPIOB, LL_GPIO_PIN_11), // Reset
+                                                 new DummyPin()
+                                                 ) {
+    mutex = xSemaphoreCreateBinary();
+}
+
+void SEP525_DMA_FreeRTOS::DMA_callback() {
+   xSemaphoreGiveFromISR(mutex, NULL);
+}
+
+SEP525_DMA_FreeRTOS *SEP525_DMA_FreeRTOS::instance() {
+    if (!inst)
+        inst = new SEP525_DMA_FreeRTOS();
+    return inst;
+}
+
+void SEP525_DMA_FreeRTOS::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
+    set_region(x, y, w, h);
+    datastart();
+
+    uint32_t size = w * h;
+
+    SPI->transfer16(color, nullptr, size, DMA_callback);
+    xSemaphoreTake(mutex, portMAX_DELAY);
+
+    dataend();
+}
+
+void SEP525_DMA_FreeRTOS::setup()
+{
+    const IRQn_Type list[] = {DMA1_Channel1_IRQn, DMA1_Channel2_IRQn, DMA1_Channel3_IRQn};
+
+    SEPS525_OLED::setup();
+
+    for (size_t irq = 0; irq < sizeof(list) / sizeof(IRQn_Type); ++irq)
+        NVIC_SetPriority(list[irq], configLIBRARY_LOWEST_INTERRUPT_PRIORITY - 1);
+}
+

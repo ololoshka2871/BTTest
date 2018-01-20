@@ -7,13 +7,13 @@ public:
 	MutexLocker(SemaphoreHandle_t mtx)
 	{
 		mutex = mtx;
-		xSemaphoreTake(mutex, portMAX_DELAY);
+        xSemaphoreTake(mutex, portMAX_DELAY);
 	}
 	
 	~MutexLocker()
 	{
 		xSemaphoreGive(mutex);
-	}
+    }
 
 private:
 	SemaphoreHandle_t mutex;	

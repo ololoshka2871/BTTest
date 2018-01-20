@@ -9,6 +9,7 @@
 
 #include "displaydemo.h"
 #include "SerialDebugLogger.h"
+#include "SEP525_DMA_FreeRTOS.h"
 
 #define	BLACK   0x0000
 #define	BLUE    0x001F
@@ -19,72 +20,11 @@
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
 
-#define _MOSI    PA7
-#define _MISO    PA6
-#define _SCK     PA5
-
-class IO_Pin : public Pin {
-public:
-    IO_Pin(GPIO_TypeDef *port = GPIOA, uint32_t pin_msk = LL_GPIO_PIN_1) : Pin() {
-        this->port = port;
-        this->pin = pin_msk;
-
-        if (port == GPIOA)
-            __HAL_RCC_GPIOA_CLK_ENABLE();
-        else if(port == GPIOB)
-            __HAL_RCC_GPIOB_CLK_ENABLE();
-
-        LL_GPIO_SetPinOutputType(port, pin, LL_GPIO_OUTPUT_PUSHPULL);
-        setDirection(D_INPUT);
-    }
-
-    bool value() const {
-        return !!LL_GPIO_IsInputPinSet(port, pin);
-    }
-
-    Direction direction() const {
-        uint32_t mode = LL_GPIO_GetPinMode(port, pin);
-        if (mode == LL_GPIO_MODE_OUTPUT)
-            return D_OUTPUT;
-        else
-            switch (LL_GPIO_GetPinPull(port, pin)) {
-            case LL_GPIO_PULL_UP:
-                return static_cast<Pin::Direction>(D_INPUT | D_PULL_UP);
-            case LL_GPIO_PULL_DOWN:
-                return static_cast<Pin::Direction>(D_INPUT | D_PULL_DOWN);
-            default:
-                return D_INPUT;
-            }
-    }
-
-    void setDirection(Direction dir) {
-        LL_GPIO_SetPinMode(port, pin, dir & D_OUTPUT ? LL_GPIO_MODE_OUTPUT : LL_GPIO_MODE_INPUT);
-        if (!(dir & D_OUTPUT))
-            LL_GPIO_SetPinPull(port, pin, dir & D_PULL_UP ?
-                                   LL_GPIO_PULL_UP : dir & D_PULL_DOWN ?
-                                       LL_GPIO_PULL_UP : LL_GPIO_PULL_NO);
-    }
-
-    void setValue(bool v) {
-        if (v)
-            LL_GPIO_SetOutputPin(port, pin);
-        else
-            LL_GPIO_ResetOutputPin(port, pin);
-    }
-private:
-    GPIO_TypeDef *port;
-    uint32_t pin;
-};
-
 
 void DisplayDemo::vDisplayDemoThreadFunc(void *pvParameters)
 {
-    auto d = new SEPS525_OLED(
-                new SPIClass(SPI1/*, _MOSI, _MISO, _SCK*/),
-                new IO_Pin(GPIOB, LL_GPIO_PIN_10), // RS B10
-                new IO_Pin(GPIOA, LL_GPIO_PIN_4), // SS
-                new IO_Pin(GPIOB, LL_GPIO_PIN_11), // Reset
-                new DummyPin()); // pinVddEnable
+    auto d = SEP525_DMA_FreeRTOS::instance();
+
     d->begin();
     DisplayDemo demo(d);
 

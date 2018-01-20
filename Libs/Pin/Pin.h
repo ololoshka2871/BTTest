@@ -1,4 +1,7 @@
 
+#ifndef _PIN_H_
+#define _PIN_H_
+
 // Interface
 class Pin {
 public:
@@ -25,3 +28,5 @@ public:
     void setDirection(Direction);
     void setValue(bool);
 };
+
+#endif /* _PIN_H_*/

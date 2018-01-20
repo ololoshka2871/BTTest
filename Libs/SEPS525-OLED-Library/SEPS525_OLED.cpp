@@ -25,8 +25,7 @@ void SEPS525_OLED::datastart()
 
 void SEPS525_OLED::data(int value)
 {
-    SPI->transfer((value>>8)& 0xFF);
-    SPI->transfer(value & 0xFF);
+    SPI->transfer16(value);
 }
 
 void SEPS525_OLED::dataend()
@@ -50,10 +49,9 @@ void SEPS525_OLED::set_region(int x, int y, int xs, int ys)
 void SEPS525_OLED::setup(void)
 {
     SPI->begin();
-    SPI->beginTransaction(SPISettings(48000000UL, MSBFIRST, SPI_MODE3)); // Fixme
-    //SPI->setBitOrder(MSBFIRST);
-    //SPI->setDataMode(SPI_MODE3);
-    //SPI->setClockDivider(SPI_CLOCK_DIV2);
+    SPI->setBitOrder(MSBFIRST);
+    SPI->setDataMode(SPI_MODE3);
+    SPI->setClockDivider(SPI_CLOCK_DIV2);
 
     // pin for switcher enable (off by default)
     pinVddEnable->setValue(HIGH);
@@ -129,17 +127,10 @@ void SEPS525_OLED::seps525_init(void)
     reg(0x13, 0x00);
 
 
-    set_region(0, 0, 160, 128);
-
-    datastart();
-    int n;
-    for(n = 0; n < 160*128; n++) {
-        data(0xffff);
-    }
-    dataend();
+    fillScreen(0xffff);
 
     pinVddEnable->setValue(LOW);
-    delay(100);
+    delay(10);
 
     reg(0x06, 0x01);
 }

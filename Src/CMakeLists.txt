@@ -69,6 +69,10 @@ SET(SOURCE_FILES
         displaydemo.h
         displaydemo.cpp
         cpp_new_hook.cpp
+        SEP525_DMA_FreeRTOS.cpp
+        SEP525_DMA_FreeRTOS.h
+        io_pin.cpp
+        io_pin.h
 )
 
 INCLUDE_DIRECTORIES(

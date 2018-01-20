@@ -171,6 +171,17 @@ void SystemClock_Config(void)
 	HAL_NVIC_SetPriority(SysTick_IRQn, 15, 0);
 }
 
+void SetupInterruptPrioritys() {
+#if defined(STM32L1)
+    const IRQn_Type list[] = {DMA1_Channel1_IRQn, DMA1_Channel2_IRQn, DMA1_Channel3_IRQn, DMA1_Channel4_IRQn,
+                             DMA1_Channel5_IRQn, DMA1_Channel6_IRQn, DMA1_Channel7_IRQn};
+    for (auto irq = 0; irq < sizeof(list) / sizeof(IRQn_Type); ++irq)
+        NVIC_SetPriority(list[irq], 90);
+#else
+#error "SETUP interrupt prioritys first!"
+#endif
+}
+
 void InitBoard()
 {
     // __NVIC_PRIO_BITS - how many prioruty bits avalable
@@ -179,6 +190,7 @@ void InitBoard()
 	// Initialize board and HAL
 	HAL_Init();
 	SystemClock_Config();
+    SetupInterruptPrioritys();
 }
 
 extern "C"
