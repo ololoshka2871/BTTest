@@ -52,8 +52,8 @@ SET(SOURCE_FILES
 #       LEDThread.h
         PrintUtils.cpp
         PrintUtils.h
-#	SdFatSPIDriver.cpp
-#	SdFatSPIDriver.h
+#       SdFatSPIDriver.cpp
+#       SdFatSPIDriver.h
 #       SdMscDriver.cpp
 #       SdMscDriver.h
 #       SDThread.cpp
@@ -73,6 +73,9 @@ SET(SOURCE_FILES
         SEP525_DMA_FreeRTOS.h
         io_pin.cpp
         io_pin.h
+
+        memset16.c
+        memset16.h
 )
 
 INCLUDE_DIRECTORIES(

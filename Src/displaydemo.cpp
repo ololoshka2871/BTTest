@@ -33,9 +33,9 @@ void DisplayDemo::vDisplayDemoThreadFunc(void *pvParameters)
     unsigned long time;
 
     while(1) {
-        time = demo.playDemo(/*counter*/12);
+        time = demo.playDemo(counter);
         serialDebugWrite("Test #%d: took %d\n\r", counter++, time);
-        //vTaskDelay(100);
+        vTaskDelay(100);
     }
 }
 

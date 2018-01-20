@@ -55,13 +55,13 @@ SET(SDFAT_SRC
 
 	SdFat/SpiDriver/DigitalPin.h
 	SdFat/SpiDriver/SdSpiBaseDriver.h
-	SdFat/SpiDriver/SdSpiDriver.h
+#	SdFat/SpiDriver/SdSpiDriver.h
 #	SdFat/SpiDriver/SdSpiESP8266.cpp
 #	SdFat/SpiDriver/SdSpiSAM3X.cpp
 #	SdFat/SpiDriver/SdSpiSTM32F1.cpp
-        SdFat/SpiDriver/SdSpiSTM32x1.cpp
+#       SdFat/SpiDriver/SdSpiSTM32x1.cpp
 #	SdFat/SpiDriver/SdSpiTeensy3.cpp
-	SdFat/SpiDriver/SoftSPI.h
+#	SdFat/SpiDriver/SoftSPI.h
 )
 ADD_LIBRARY(SDFAT STATIC ${SDFAT_SRC})
 

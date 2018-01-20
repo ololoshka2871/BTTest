@@ -7,6 +7,10 @@
 #include <queue.h>
 #include <semphr.h>
 
+#ifndef DMA_TRESHOLD
+#define DMA_TRESHOLD 16
+#endif
+
 class SEP525_DMA_FreeRTOS : public SEPS525_OLED {
 private:
     class Region {
@@ -112,6 +116,8 @@ protected:
     virtual void select_region(const Region& region);
 
     virtual void set_region(const Region& region);
+
+    virtual void send_fill_data(uint16_t color, uint32_t size);
 
 private:
     Region currentRegion;

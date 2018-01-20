@@ -3,7 +3,9 @@
 #include <task.h>
 #include <Pin.h>
 #include <SPI.h>
+
 #include "io_pin.h"
+#include "memset16.h"
 
 SemaphoreHandle_t SEP525_DMA_FreeRTOS::mutex;
 SEP525_DMA_FreeRTOS *SEP525_DMA_FreeRTOS::inst;
@@ -28,16 +30,30 @@ SEP525_DMA_FreeRTOS *SEP525_DMA_FreeRTOS::instance() {
     return inst;
 }
 
-void SEP525_DMA_FreeRTOS::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
-    set_region(x, y, w, h);
+void SEP525_DMA_FreeRTOS::send_fill_data(uint16_t color, uint32_t size)
+{
     datastart();
 
-    uint32_t size = w * h;
-
-    SPI->transfer16(color, nullptr, size, DMA_callback);
-    xSemaphoreTake(mutex, portMAX_DELAY);
+    if (size > DMA_TRESHOLD) {
+        SPI->transfer16(color, nullptr, size, DMA_callback);
+        xSemaphoreTake(mutex, portMAX_DELAY);
+    } else {
+        // Падает на третьей строчке теста текста.
+        SPI->setDataWidth16(true);
+        uint16_t _b[size];
+        memset16(_b, color, size);
+        uint32_t DataSize = SPI->spiHandle.Init.DataSize;
+        SPI->spiHandle.Init.DataSize = SPI_DATASIZE_16BIT;
+        HAL_SPI_Transmit(&SPI->spiHandle, (uint8_t*)_b, size, 10);
+        SPI->spiHandle.Init.DataSize = DataSize;
+    }
 
     dataend();
+}
+
+void SEP525_DMA_FreeRTOS::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
+    set_region(x, y, w, h);
+    send_fill_data(color, w * h);
 }
 
 void SEP525_DMA_FreeRTOS::setup()
@@ -87,10 +103,7 @@ void SEP525_DMA_FreeRTOS::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_
 {
     if (h) {
         set_region(x, y, 1, h);
-        datastart();
-        SPI->transfer16(color, nullptr, h, DMA_callback);
-        xSemaphoreTake(mutex, portMAX_DELAY);
-        dataend();
+        send_fill_data(color, h);
     }
 }
 
@@ -98,10 +111,7 @@ void SEP525_DMA_FreeRTOS::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_
 {
     if (w) {
         set_region(x, y, w, 1);
-        datastart();
-        SPI->transfer16(color, nullptr, w, DMA_callback);
-        xSemaphoreTake(mutex, portMAX_DELAY);
-        dataend();
+        send_fill_data(color, w);
     }
 }
 

@@ -35,7 +35,7 @@ int main(void)
     //initUSB();
 
     // Set up threads
-    xTaskCreate(testtaskvoid, "Test Thread", configMINIMAL_STACK_SIZE * 2, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(testtaskvoid, "Test Thread", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 1, NULL);
     xTaskCreate(DisplayDemo::vDisplayDemoThreadFunc, "Display Task", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
 
 	// Run scheduler and all the threads
