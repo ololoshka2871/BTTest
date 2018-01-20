@@ -32,6 +32,8 @@ protected:
     virtual void dataend(void);
     virtual void set_region(int x, int y, int xs, int ys);
     virtual void setup();
+    virtual void set_start_pos(int x, int y);
+    virtual void select_region(int xs, int x, int y, int ys);
 };
 
 #endif

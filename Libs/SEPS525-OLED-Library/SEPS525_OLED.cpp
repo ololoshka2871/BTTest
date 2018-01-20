@@ -33,17 +33,27 @@ void SEPS525_OLED::dataend()
     pinSS->setValue(HIGH);
 }
 
-void SEPS525_OLED::set_region(int x, int y, int xs, int ys)
+void SEPS525_OLED::set_start_pos(int x, int y)
 {
-    // draw region
+    reg(0x20,x);
+    reg(0x21,y);
+}
+
+void SEPS525_OLED::select_region(int xs, int x, int y, int ys)
+{
     reg(0x17,x);
     reg(0x18,x+xs-1);
     reg(0x19,y);
     reg(0x1a,y+ys-1);
+}
+
+void SEPS525_OLED::set_region(int x, int y, int xs, int ys)
+{
+    // draw region
+    select_region(xs, x, y, ys);
 
     // start position
-    reg(0x20,x);
-    reg(0x21,y);
+    set_start_pos(x, y);
 }
 
 void SEPS525_OLED::setup(void)

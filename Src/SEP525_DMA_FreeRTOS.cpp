@@ -14,12 +14,12 @@ SEP525_DMA_FreeRTOS::SEP525_DMA_FreeRTOS() : SEPS525_OLED(
                                                  new IO_Pin(GPIOA, LL_GPIO_PIN_4), // SS
                                                  new IO_Pin(GPIOB, LL_GPIO_PIN_11), // Reset
                                                  new DummyPin()
-                                                 ) {
+                                                 ), currentRegion(width(), height()) {
     mutex = xSemaphoreCreateBinary();
 }
 
 void SEP525_DMA_FreeRTOS::DMA_callback() {
-   xSemaphoreGiveFromISR(mutex, NULL);
+    xSemaphoreGiveFromISR(mutex, NULL);
 }
 
 SEP525_DMA_FreeRTOS *SEP525_DMA_FreeRTOS::instance() {
@@ -49,4 +49,40 @@ void SEP525_DMA_FreeRTOS::setup()
     for (size_t irq = 0; irq < sizeof(list) / sizeof(IRQn_Type); ++irq)
         NVIC_SetPriority(list[irq], configLIBRARY_LOWEST_INTERRUPT_PRIORITY - 1);
 }
+
+void SEP525_DMA_FreeRTOS::set_region(int x, int y, int w, int h)
+{
+    if ((w == 1) && (h == 1)){
+        if (!currentRegion.contains(x, y)) {
+            currentRegion.fill();
+            set_region(currentRegion);
+        }
+        set_start_pos(x, y);
+    } else {
+        if (!currentRegion.compare(x, y, x + w, y + h)) {
+            currentRegion.update(x, y, x + w, y + h);
+            set_region(currentRegion);
+        }
+    }
+}
+/*
+void SEP525_DMA_FreeRTOS::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
+{
+    set_region(x, y, 1, h);
+    datastart();
+    SPI->transfer16(color, nullptr, h, DMA_callback);
+    xSemaphoreTake(mutex, portMAX_DELAY);
+    dataend();
+}
+
+void SEP525_DMA_FreeRTOS::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
+{
+    set_region(x, y, w, 1);
+    datastart();
+    SPI->transfer16(color, nullptr, w, DMA_callback);
+    xSemaphoreTake(mutex, portMAX_DELAY);
+    dataend();
+}
+*/
+
 
