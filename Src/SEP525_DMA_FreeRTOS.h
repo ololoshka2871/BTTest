@@ -103,6 +103,8 @@ public:
     void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
     void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 
+    virtual void drawImage(const uint16_t *data, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
 protected:
     void setup();
     void set_region(int x, int y, int w, int h);

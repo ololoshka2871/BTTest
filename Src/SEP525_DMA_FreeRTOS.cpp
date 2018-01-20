@@ -104,3 +104,16 @@ void SEP525_DMA_FreeRTOS::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_
         dataend();
     }
 }
+
+void SEP525_DMA_FreeRTOS::drawImage(const uint16_t *data, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+{
+    uint32_t image_size = w * h;
+    if (!image_size)
+        return;
+
+    set_region(x, y, w, h);
+    datastart();
+    SPI->transfer16((uint16_t*)data, nullptr, image_size, DMA_callback);
+    xSemaphoreTake(mutex, portMAX_DELAY);
+    dataend();
+}

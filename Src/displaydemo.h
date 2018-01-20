@@ -1,12 +1,12 @@
 #ifndef DISPLAYDEMO_H
 #define DISPLAYDEMO_H
 
-class Adafruit_GFX;
+class SEP525_DMA_FreeRTOS;
 
 class DisplayDemo
 {
 private:
-    DisplayDemo(Adafruit_GFX *display) : display(display) {}
+    DisplayDemo(SEP525_DMA_FreeRTOS *display) : display(display) {}
 
 public:
     static void vDisplayDemoThreadFunc(void* pvParameters);
@@ -24,12 +24,13 @@ public:
     unsigned long testFilledTriangles();
     unsigned long testRoundRects();
     unsigned long testFilledRoundRects();
+    unsigned long testdrawBMP();
 
     unsigned long playDemo(int demo);
-    static const int demo_count = 12;
+    static const int demo_count = 13;
 
 private:
-    Adafruit_GFX* display;
+    SEP525_DMA_FreeRTOS* display;
 };
 
 #endif // DISPLAYDEMO_H
