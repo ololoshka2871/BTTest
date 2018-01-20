@@ -100,15 +100,16 @@ public:
     static SEP525_DMA_FreeRTOS *instance();
 
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
-    //void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
-    //void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+    void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+    void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 
 protected:
     void setup();
     void set_region(int x, int y, int w, int h);
-    virtual void set_region(const Region& region) {
-         SEPS525_OLED::set_region(region.x, region.y, region.xs - region.x, region.ys - region.y);
-    }
+
+    virtual void select_region(const Region& region);
+
+    virtual void set_region(const Region& region);
 
 private:
     Region currentRegion;

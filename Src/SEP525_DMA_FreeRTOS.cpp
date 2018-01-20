@@ -65,24 +65,42 @@ void SEP525_DMA_FreeRTOS::set_region(int x, int y, int w, int h)
         }
     }
 }
-/*
+
+void SEP525_DMA_FreeRTOS::select_region(const SEP525_DMA_FreeRTOS::Region &region)
+{
+    reg(0x17,region.x);
+    reg(0x18,region.xs-1);
+    reg(0x19,region.y);
+    reg(0x1a,region.ys-1);
+}
+
+void SEP525_DMA_FreeRTOS::set_region(const SEP525_DMA_FreeRTOS::Region &region)
+{
+    // draw region
+    select_region(region);
+
+    // start position
+    set_start_pos(region.x, region.y);
+}
+
 void SEP525_DMA_FreeRTOS::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
 {
-    set_region(x, y, 1, h);
-    datastart();
-    SPI->transfer16(color, nullptr, h, DMA_callback);
-    xSemaphoreTake(mutex, portMAX_DELAY);
-    dataend();
+    if (h) {
+        set_region(x, y, 1, h);
+        datastart();
+        SPI->transfer16(color, nullptr, h, DMA_callback);
+        xSemaphoreTake(mutex, portMAX_DELAY);
+        dataend();
+    }
 }
 
 void SEP525_DMA_FreeRTOS::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
 {
-    set_region(x, y, w, 1);
-    datastart();
-    SPI->transfer16(color, nullptr, w, DMA_callback);
-    xSemaphoreTake(mutex, portMAX_DELAY);
-    dataend();
+    if (w) {
+        set_region(x, y, w, 1);
+        datastart();
+        SPI->transfer16(color, nullptr, w, DMA_callback);
+        xSemaphoreTake(mutex, portMAX_DELAY);
+        dataend();
+    }
 }
-*/
-
-
