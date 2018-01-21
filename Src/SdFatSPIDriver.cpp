@@ -1,10 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <stm32f1xx_hal_dma.h>
-#include <stm32f1xx_hal_gpio.h>
-#include <stm32f1xx_hal_spi.h>
-
 #include <Arduino_FreeRTOS.h>
 #include <SPI.h> // Should not be included, but SPISettings is defined there
 

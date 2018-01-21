@@ -55,7 +55,7 @@ SET(SDFAT_SRC
 
 	SdFat/SpiDriver/DigitalPin.h
 	SdFat/SpiDriver/SdSpiBaseDriver.h
-#	SdFat/SpiDriver/SdSpiDriver.h
+        SdFat/SpiDriver/SdSpiDriver.h
 #	SdFat/SpiDriver/SdSpiESP8266.cpp
 #	SdFat/SpiDriver/SdSpiSAM3X.cpp
 #	SdFat/SpiDriver/SdSpiSTM32F1.cpp

@@ -6,6 +6,7 @@
 
 #include "io_pin.h"
 #include "memset16.h"
+#include "DMAHalper.h"
 
 SemaphoreHandle_t SEP525_DMA_FreeRTOS::mutex;
 SEP525_DMA_FreeRTOS *SEP525_DMA_FreeRTOS::inst;
@@ -62,8 +63,11 @@ void SEP525_DMA_FreeRTOS::setup()
 
     SEPS525_OLED::setup();
 
+    FixSPI_DMA_IRQ_Prio(&SPI->spiHandle, configLIBRARY_LOWEST_INTERRUPT_PRIORITY - 2);
+/*
     for (size_t irq = 0; irq < sizeof(list) / sizeof(IRQn_Type); ++irq)
         NVIC_SetPriority(list[irq], configLIBRARY_LOWEST_INTERRUPT_PRIORITY - 1);
+        */
 }
 
 void SEP525_DMA_FreeRTOS::set_region(int x, int y, int w, int h)

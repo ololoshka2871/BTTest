@@ -1,6 +1,8 @@
 # Build rules for GPS logger target.
 # App specific compiler/linker settings are also defined here
 
+ADD_SUBDIRECTORY(IMG)
+
 SET(SOURCE_FILES
 	# Screens and screen management stuff
 #	Screens/AltitudeScreen.cpp
@@ -73,9 +75,17 @@ SET(SOURCE_FILES
         SEP525_DMA_FreeRTOS.h
         io_pin.cpp
         io_pin.h
+        DMAHalper.cpp
+        DMAHalper.h
 
         memset16.c
         memset16.h
+
+        AltSDFAtSPIDriver.cpp
+        AltSDFAtSPIDriver.h
+
+        SDWorker.cpp
+        SDWorker.h
 )
 
 INCLUDE_DIRECTORIES(
@@ -85,6 +95,7 @@ INCLUDE_DIRECTORIES(
         ${LIBS_DIR}/Pin
         ${LIBS_DIR}/SdFat
         ${LIBS_DIR}/STM32generic/libraries/SPI/src
+        ${LIBS_DIR}/STM32generic/libraries/stm32_dma/src
         ${LIBS_DIR}/STM32generic/libraries/FreeRTOS/src
         ${LIBS_DIR}/USB/Core
         ${LIBS_DIR}/USB/CDC

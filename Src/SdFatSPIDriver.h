@@ -3,7 +3,7 @@
 
 #include "SpiDriver/SdSpiBaseDriver.h"
 
-#include <stm32f1xx_hal_spi.h>
+#include "hw_includes.h"
 
 //Forward declarations
 class SPISettings;
