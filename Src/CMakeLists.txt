@@ -83,6 +83,10 @@ SET(SOURCE_FILES
 
         AltSDFAtSPIDriver.cpp
         AltSDFAtSPIDriver.h
+        DisplayThread.cpp
+        DisplayThread.h
+        DisplayController.cpp
+        DisplayController.h
 
         SDWorker.cpp
         SDWorker.h

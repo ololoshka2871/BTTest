@@ -1,33 +1,24 @@
+#include <functional>
 #include <FreeRTOS.h>
+#include <FreeRTOSConfig.h>
 #include <task.h>
-#include <Print.h>
 #include <SPI.h>
 #include "AltSDFAtSPIDriver.h"
 #include "SDWorker.h"
 #include "io_pin.h"
 
-// SdFat needs Serial for its interface. Provide our one
-// (must be declared before including SdFat.h)
-class FakePrint : public Print
-{
-    virtual size_t write(uint8_t c)
-    {
-        return 1;
-    }
-};
 
-static FakePrint Serial;
+FakePrint Serial;
 
 #include <SdFat.h>
 
-
-SDWorker::SDWorker()
+void SDWorkerThread(void *arg)
 {
+    auto getter = static_cast<std::function<void(QueueHandle_t&, QueueHandle_t&)>*>(arg);
 
-}
+    QueueHandle_t inq, outq;
+    (*getter)(inq, outq);
 
-void SDWorker::SDWorkerThread(void *pvParameters)
-{
     IO_Pin cs(GPIOB, LL_GPIO_PIN_12);
     SPIClass spi(SPI2);
     auto driver = AltSDFAtSPIDriver::instance();
@@ -37,6 +28,12 @@ void SDWorker::SDWorkerThread(void *pvParameters)
     sd.begin();
 
     while(1) {
-        vTaskDelay(1000);
+        FSCommand* c;
+        if (xQueueReceive(inq, &c, portMAX_DELAY)) {
+            if (c->processFS(sd))
+                while(xQueueSendToBack(outq, &c, portMAX_DELAY) == errQUEUE_FULL);
+            else
+                delete c; // error occured, remove object from pipeline
+        }
     }
 }

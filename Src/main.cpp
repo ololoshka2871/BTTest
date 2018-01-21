@@ -12,7 +12,7 @@
 #include "SdMscDriver.h"
 
 #include "displaydemo.h"
-#include "SDWorker.h"
+#include "DisplayController.h"
 
 
 int main(void)
@@ -27,8 +27,9 @@ int main(void)
     //initUSB();
 
     // Set up threads
-    xTaskCreate(DisplayDemo::vDisplayDemoThreadFunc, "Display Task", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
-    xTaskCreate(SDWorker::SDWorkerThread, "SDThread", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
+    //xTaskCreate(DisplayDemo::vDisplayDemoThreadFunc, "Display Task", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(DisplayController::DisplayControllerThread, "DisplayCtrl",
+                configMINIMAL_STACK_SIZE * 2, NULL, tskIDLE_PRIORITY + 2, NULL);
 
 	// Run scheduler and all the threads
     vTaskStartScheduler();
