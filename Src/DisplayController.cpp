@@ -1,5 +1,4 @@
-#include <functional>
-#include <memory>
+
 #include "SDWorker.h"
 #include "DisplayThread.h"
 
@@ -11,6 +10,11 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include <queue.h>
+
+#include <SerialDebugLogger.h>
+
+
+#define IO_BLOCK_SIZE   512
 
 //////////////////////////////////
 
@@ -48,25 +52,42 @@ class RawImageLoader : public IPipeLine {
 public:
     RawImageLoader(DisplayController* controller,
                    const std::shared_ptr<FatFile> &file,
+                   const Rectungle& rect,
                    const uint32_t offset)
-        : file(file)
+        : file(file), position(rect)
     {
         this->controller = controller;
         this->offset = offset;
+        read = 0;
     }
 
     bool processFS(SdFat& fs) {
+        if (!file->isOpen())
+            return false;
 
+        if (!file->seekSet(offset))
+            return false;
+
+        read = file->read(buf, min(file->available(), FragmentSize));
+        if (read < 0)
+            return false;
+
+        if (file->available() == 0)
+            file->close();
+
+        return true;
     }
 
     void processDisplay(SEP525_DMA_FreeRTOS& display) {
-
+        display.drawFragment((const uint16_t*)buf, read, position,
+                             position.offset2columnAbs(offset), position.offset2columnAbs(offset));
     }
 
 protected:
     DisplayController *controller;
     std::shared_ptr<FatFile> file;
-    uint32_t offset;
+    uint32_t offset, read;
+    Rectungle position;
 
     uint8_t buf[FragmentSize];
 };
@@ -81,43 +102,60 @@ void DisplayController::DisplayControllerThread(void *args)
     _controller.fs_queue       = xQueueCreate(1, sizeof(IPipeLine*));
     _controller.display_queue  = xQueueCreate(1, sizeof(IPipeLine*));
 
-    std::function<void(QueueHandle_t&, QueueHandle_t&)> fs_queue_getter =
-            [=](QueueHandle_t &r_fs_queue, QueueHandle_t &r_display_queue)
-    { r_fs_queue = fs_queue; r_display_queue = display_queue; };
-    std::function<void(QueueHandle_t&)> display_queue_retter =
-            [=](QueueHandle_t &r_display_queue)
-    { r_display_queue = display_queue; };
+    DisplayThreadArg display_thread_args = {.rx_queue = _controller.display_queue,
+                                            .rotation = 0
+                                           };
+    SDThreadArg sd_thread_args = { .rx_queue = _controller.fs_queue,
+                                   .tx_queue = _controller.display_queue
+                                 };
 
     // start DisplayThreadFunc
-    xTaskCreate(DisplayThreadFunc, "DisplayThread",
-                configMINIMAL_STACK_SIZE * 2, &display_queue_retter, tskIDLE_PRIORITY + 3, NULL);
+    xTaskCreate((TaskFunction_t)DisplayThreadFunc, "DisplayThread",
+                configMINIMAL_STACK_SIZE * 2, &display_thread_args, tskIDLE_PRIORITY + 3, NULL);
     // start SDWorkerThread
-    xTaskCreate(SDWorkerThread, "DisplayCtrl",
-                configMINIMAL_STACK_SIZE * 2 + 512, &fs_queue_getter, tskIDLE_PRIORITY + 3, NULL);
+    xTaskCreate((TaskFunction_t)SDWorkerThread, "DisplayCtrl",
+                configMINIMAL_STACK_SIZE * 2 + 512, &sd_thread_args, tskIDLE_PRIORITY + 3, NULL);
 
-    auto cmd = new RawImageLoader<512>(&_controller, "/1/akne1.565");
+    FatFile baseDir;
+    std::shared_ptr<FatFile> file(new FatFile);
 
-    while(xQueueSendToBack(fs_queue, &cmd, portMAX_DELAY) == errQUEUE_FULL);
     while(1) {
+        if (!baseDir.isOpen())
+            if (!baseDir.open("/1"))
+                continue;
+        if (!file->openNext(&baseDir, O_READ)) {
+            baseDir.close();
+            continue;
+        }
+
+        uint32_t time = _controller.LoadImage(file, Rectungle(0, 0, 160, 128));
+        serialDebugWrite("Load img took %d ticks\n\r", time);
         vTaskDelay(1000);
     }
 }
 
-void DisplayController::LoadImage(const char *path, const Rectungle& pos)
-{
+uint32_t DisplayController::LoadImage(const char *path, const Rectungle& pos)
+{    
     std::shared_ptr<FatFile> file(new FatFile);
     if (!file->open(path, O_READ))
-        return;
+        return 0;
 
+    return LoadImage(file, pos);
+}
+
+uint32_t DisplayController::LoadImage(std::shared_ptr<FatFile> &file, const Rectungle &pos)
+{
+    uint32_t start = micros();
     size_t toRead = min(file->fileSize(), pos.size());
 
     size_t offset = 0;
     while (toRead) {
-        auto cmd = new RawImageLoader<512>(this, file, offset);
+        auto cmd = new RawImageLoader<IO_BLOCK_SIZE>(this, file, pos, offset);
         while(xQueueSendToBack(fs_queue, &cmd, portMAX_DELAY) == errQUEUE_FULL);
-        offset += 512;
-        toRead -= 512;
+        offset += IO_BLOCK_SIZE;
+        toRead = toRead >= IO_BLOCK_SIZE ? toRead - IO_BLOCK_SIZE : 0;
     }
+    return micros() - start;
 }
 
 

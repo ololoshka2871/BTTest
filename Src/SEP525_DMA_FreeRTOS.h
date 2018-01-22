@@ -20,10 +20,22 @@ public:
         this->y1 = y1;
         this->y2 = y2;
     }
+    Rectungle(const Rectungle& src) {
+        this->x1 = src.x1;
+        this->x2 = src.x2;
+        this->y1 = src.y1;
+        this->y2 = src.y2;
+    }
 
     size_t size() const;
     size_t width() const;
     size_t heigth() const;
+
+    uint32_t offset2column(uint32_t offset) const;
+    uint32_t offset2row(uint32_t offset) const;
+
+    uint32_t offset2columnAbs(uint32_t offset) const;
+    uint32_t offset2rowAbs(uint32_t offset) const;
 };
 
 class SEP525_DMA_FreeRTOS : public SEPS525_OLED {
@@ -127,6 +139,8 @@ public:
                            uint16_t x, uint16_t y,
                            uint16_t w, uint16_t h,
                            uint16_t start_x, uint16_t start_y);
+    virtual void drawFragment(const uint16_t *data, size_t size_bytes,
+                           const Rectungle& rect, uint16_t start_x, uint16_t start_y);
 
 protected:
     void setup();
@@ -137,7 +151,7 @@ protected:
 
     virtual void set_region(const Region& region);
 
-    virtual void send_fill_data(uint16_t color, uint32_t size);
+    virtual void send_fill_color(uint16_t color, uint32_t size);
 
 private:
     Region currentRegion;

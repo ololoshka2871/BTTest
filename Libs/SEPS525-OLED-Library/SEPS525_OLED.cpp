@@ -198,3 +198,18 @@ uint16_t SEPS525_OLED::color565(uint8_t r, uint8_t g, uint8_t b)
 {
     return (r << 11) | (g << 5) | b;
 }
+
+void SEPS525_OLED::setRotation(uint8_t r)
+{
+    Adafruit_GFX::setRotation(r);
+    switch (rotation & 3) {
+    case 0: // normal
+        break;
+    case 1:
+        break;
+    case 2:
+        break;
+    case 3:
+        break;
+    }
+}

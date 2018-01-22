@@ -18,6 +18,8 @@ public:
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
     static uint16_t color565(uint8_t r, uint8_t g, uint8_t b);
 
+    void setRotation(uint8_t r);
+
 private:
     Pin *pinRS, *pinSS, *pinReset, *pinVddEnable;
 

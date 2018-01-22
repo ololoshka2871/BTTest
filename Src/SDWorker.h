@@ -16,6 +16,14 @@ class FakePrint : public Print
 
 extern FakePrint Serial;
 
-void SDWorkerThread(void *arg);
+#include <FreeRTOS.h>
+#include <queue.h>
+
+struct SDThreadArg
+{
+    QueueHandle_t rx_queue, tx_queue;
+};
+
+void SDWorkerThread(SDThreadArg *arg);
 
 #endif // SDWORKER_H

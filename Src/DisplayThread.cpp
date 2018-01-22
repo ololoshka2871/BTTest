@@ -1,27 +1,21 @@
-#include <FreeRTOS.h>
-#include <queue.h>
 #include <memory>
-#include <functional>
 #include "DisplayController.h"
 
 #include "SEP525_DMA_FreeRTOS.h"
 
 #include "DisplayThread.h"
 
-void DisplayThreadFunc(void* arg)
+void DisplayThreadFunc(DisplayThreadArg *arg)
 {
-    auto getter = static_cast<std::function<void(QueueHandle_t&)>*>(arg);
-
-    QueueHandle_t commandQueue;
-    (*getter)(commandQueue);
-
     auto display = SEP525_DMA_FreeRTOS::instance();
     display->begin();
+    display->setRotation(arg->rotation);
 
+    IPipeLine* p;
     while (1) {
-        IPipeLine* p;
-        if (xQueueReceive(commandQueue, &p, portMAX_DELAY)) {
+        if (xQueueReceive(arg->rx_queue, &p, portMAX_DELAY)) {
             p->processDisplay(*display);
+            delete p;
         }
     }
 }

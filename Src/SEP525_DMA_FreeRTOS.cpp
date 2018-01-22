@@ -31,7 +31,7 @@ SEP525_DMA_FreeRTOS *SEP525_DMA_FreeRTOS::instance() {
     return inst;
 }
 
-void SEP525_DMA_FreeRTOS::send_fill_data(uint16_t color, uint32_t size)
+void SEP525_DMA_FreeRTOS::send_fill_color(uint16_t color, uint32_t size)
 {
     datastart();
 
@@ -39,7 +39,6 @@ void SEP525_DMA_FreeRTOS::send_fill_data(uint16_t color, uint32_t size)
         SPI->transfer16(color, nullptr, size, DMA_callback);
         xSemaphoreTake(mutex, portMAX_DELAY);
     } else {
-        // Падает на третьей строчке теста текста.
         SPI->setDataWidth16(true);
         uint16_t _b[size];
         memset16(_b, color, size);
@@ -54,7 +53,7 @@ void SEP525_DMA_FreeRTOS::send_fill_data(uint16_t color, uint32_t size)
 
 void SEP525_DMA_FreeRTOS::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
     set_region(x, y, w, h);
-    send_fill_data(color, w * h);
+    send_fill_color(color, w * h);
 }
 
 void SEP525_DMA_FreeRTOS::setup()
@@ -64,10 +63,6 @@ void SEP525_DMA_FreeRTOS::setup()
     SEPS525_OLED::setup();
 
     FixSPI_DMA_IRQ_Prio(&SPI->spiHandle, configLIBRARY_LOWEST_INTERRUPT_PRIORITY - 2);
-    /*
-    for (size_t irq = 0; irq < sizeof(list) / sizeof(IRQn_Type); ++irq)
-        NVIC_SetPriority(list[irq], configLIBRARY_LOWEST_INTERRUPT_PRIORITY - 1);
-        */
 }
 
 void SEP525_DMA_FreeRTOS::set_region(int x, int y, int w, int h)
@@ -112,7 +107,7 @@ void SEP525_DMA_FreeRTOS::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_
 {
     if (h) {
         set_region(x, y, 1, h);
-        send_fill_data(color, h);
+        send_fill_color(color, h);
     }
 }
 
@@ -120,7 +115,7 @@ void SEP525_DMA_FreeRTOS::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_
 {
     if (w) {
         set_region(x, y, w, 1);
-        send_fill_data(color, w);
+        send_fill_color(color, w);
     }
 }
 
@@ -148,7 +143,24 @@ void SEP525_DMA_FreeRTOS::drawFragment(
     datastart();
     SPI->transfer16((uint16_t*)data, nullptr, size_bytes, DMA_callback);
     xSemaphoreTake(mutex, portMAX_DELAY);
+
+    if (size_bytes > DMA_TRESHOLD) {
+        SPI->transfer16((uint16_t*)data, nullptr, size_bytes, DMA_callback);
+        xSemaphoreTake(mutex, portMAX_DELAY);
+    } else {
+        SPI->setDataWidth16(true);
+        uint32_t DataSize = SPI->spiHandle.Init.DataSize;
+        SPI->spiHandle.Init.DataSize = SPI_DATASIZE_16BIT;
+        HAL_SPI_Transmit(&SPI->spiHandle, (uint8_t*)data, size_bytes, 10);
+        SPI->spiHandle.Init.DataSize = DataSize;
+    }
+
     dataend();
+}
+
+void SEP525_DMA_FreeRTOS::drawFragment(const uint16_t *data, size_t size_bytes, const Rectungle &rect, uint16_t start_x, uint16_t start_y)
+{
+    drawFragment(data, size_bytes, rect.x1, rect.y1, rect.width(), rect.heigth(), start_x, start_y);
 }
 
 size_t Rectungle::size() const
@@ -164,4 +176,22 @@ size_t Rectungle::width() const
 size_t Rectungle::heigth() const
 {
     return abs(y2 - y1);
+}
+
+uint32_t Rectungle::offset2column(uint32_t offset) const {
+    return offset % width();
+}
+
+uint32_t Rectungle::offset2row(uint32_t offset) const {
+    return offset / width();
+}
+
+uint32_t Rectungle::offset2columnAbs(uint32_t offset) const
+{
+    return offset % width() + x1;
+}
+
+uint32_t Rectungle::offset2rowAbs(uint32_t offset) const
+{
+    return offset / width() + y1;
 }

@@ -1,6 +1,7 @@
 #ifndef DISPLAYCONTROLLER_H
 #define DISPLAYCONTROLLER_H
 
+#include <memory>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -11,6 +12,7 @@
 class SdFat;
 class Rectungle;
 class SEP525_DMA_FreeRTOS;
+class FatFile;
 
 class IPipeLine {
 public:
@@ -22,12 +24,13 @@ public:
 class DisplayController
 {
 private:
-    DisplayController();
+    DisplayController() {}
 
 public:
     static void DisplayControllerThread(void *args);
 
-    void LoadImage(const char* path, const Rectungle &pos);
+    uint32_t LoadImage(const char* path, const Rectungle &pos);
+    uint32_t LoadImage(std::shared_ptr<FatFile> &file, const Rectungle &pos);
 
 private:
     QueueHandle_t fs_queue, display_queue;

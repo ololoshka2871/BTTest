@@ -1,6 +1,5 @@
 #include <functional>
 #include <FreeRTOS.h>
-#include <FreeRTOSConfig.h>
 #include <task.h>
 #include <SPI.h>
 #include "AltSDFAtSPIDriver.h"
@@ -13,15 +12,11 @@ FakePrint Serial;
 
 #include <SdFat.h>
 
-void SDWorkerThread(void *arg)
+void SDWorkerThread(SDThreadArg *arg)
 {
-    auto getter = static_cast<std::function<void(QueueHandle_t&, QueueHandle_t&)>*>(arg);
-
-    QueueHandle_t inq, outq;
-    (*getter)(inq, outq);
-
     IO_Pin cs(GPIOB, LL_GPIO_PIN_12);
     SPIClass spi(SPI2);
+
     auto driver = AltSDFAtSPIDriver::instance();
     SdFat sd(driver);
 
@@ -30,11 +25,11 @@ void SDWorkerThread(void *arg)
 
     while(1) {
         IPipeLine* c;
-        if (xQueueReceive(inq, &c, portMAX_DELAY)) {
+        if (xQueueReceive(arg->rx_queue, &c, portMAX_DELAY)) {
             if (c->processFS(sd))
-                while(xQueueSendToBack(outq, &c, portMAX_DELAY) == errQUEUE_FULL);
+                while(xQueueSendToBack(arg->tx_queue, &c, portMAX_DELAY) == errQUEUE_FULL);
             else
-                delete c; // error occured, remove object from pipeline
+                delete c; // error occured, remove object no piping next
         }
     }
 }
