@@ -1,4 +1,5 @@
 #include <functional>
+#include <memory>
 #include "SDWorker.h"
 #include "DisplayThread.h"
 
@@ -16,7 +17,7 @@
 template<int FragmentSize>
 class RawImageDisplayer : public IPipeLine {
 public:
-    RawImageDisplayer(DisplayController* controlle) {
+    RawImageDisplayer(DisplayController* controller) {
         this->controller = controller;
     }
 
@@ -42,7 +43,66 @@ protected:
 
 //////////////////////////////////
 
+template<int FragmentSize>
+class RawImageLoader : public IPipeLine {
+public:
+    RawImageLoader(DisplayController* controller, const char* path)
+        :file(new FatFile),
+          buf(new uint8_t[FragmentSize], std::default_delete<uint8_t[]>())
+    {
+        this->controller = controller;
+        this->path = path;
+        pos_r = pos_w = 0;
+    }
 
+    bool processFS(SdFat& fs) {
+        if (!file->isOpen()) {
+            if (!file->open(path, O_READ))
+                return false;
+        }
+        if (!file->seekSet(pos_r)) {
+            file->close();
+            return false;
+        }
+        int read = file->read(buf.get(), min(file->available(), FragmentSize));
+        if (read < 0) {
+            file->close();
+            return false;
+        }
+        pos_r += read;
+        _eof = !file->available();
+        if (_eof)
+            file->close();
+    }
+
+    void processDisplay(SEP525_DMA_FreeRTOS& display) {
+        int16_t d_w = display.height();
+        int16_t d_h = display.width();
+        int16_t pos_x = pos_w % d_w;
+        int16_t pos_y = pos_w / d_h;
+        uint32_t toWrite = pos_r - pos_w;
+        display.drawFragment((const uint16_t*)buf.get(), toWrite,
+                             0, 0, d_w, d_h, pos_x, pos_y);
+        pos_w = pos_r;
+
+        controller->DisplayWriten(toWrite);
+        if (!_eof) {
+            auto newCMD = new RawImageLoader(*this);
+            newCMD->pos_r = controller->nextOffset();
+        } else {
+
+        }
+    }
+
+
+protected:
+    uint32_t pos_r, pos_w;
+    DisplayController *controller;
+    const char* path;
+    std::shared_ptr<FatFile> file;
+    bool _eof;
+    std::shared_ptr<uint8_t[]> buf;
+};
 
 /////////////////////////////////
 
@@ -56,10 +116,10 @@ void DisplayController::DisplayControllerThread(void *args)
 
     std::function<void(QueueHandle_t&, QueueHandle_t&)> fs_queue_getter =
             [=](QueueHandle_t &r_fs_queue, QueueHandle_t &r_display_queue)
-                { r_fs_queue = fs_queue; r_display_queue = display_queue; };
+    { r_fs_queue = fs_queue; r_display_queue = display_queue; };
     std::function<void(QueueHandle_t&)> display_queue_retter =
             [=](QueueHandle_t &r_display_queue)
-                { r_display_queue = display_queue; };
+    { r_display_queue = display_queue; };
 
     // start DisplayThreadFunc
     xTaskCreate(DisplayThreadFunc, "DisplayThread",
@@ -68,12 +128,22 @@ void DisplayController::DisplayControllerThread(void *args)
     xTaskCreate(SDWorkerThread, "DisplayCtrl",
                 configMINIMAL_STACK_SIZE * 2 + 512, &fs_queue_getter, tskIDLE_PRIORITY + 3, NULL);
 
-    auto cmd = new RawImageDisplayer<512>(&_controller);
+    auto cmd = new RawImageLoader<512>(&_controller, "/1/akne1.565");
 
+    while(xQueueSendToBack(fs_queue, &cmd, portMAX_DELAY) == errQUEUE_FULL);
     while(1) {
-        while(xQueueSendToBack(fs_queue, &cmd, portMAX_DELAY) == errQUEUE_FULL);
         vTaskDelay(1000);
     }
+}
+
+void DisplayController::DisplayWriten(size_t bytes)
+{
+
+}
+
+uint32_t DisplayController::nextOffset() const
+{
+
 }
 
 DisplayController::DisplayController()

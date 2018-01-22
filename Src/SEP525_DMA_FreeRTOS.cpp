@@ -64,7 +64,7 @@ void SEP525_DMA_FreeRTOS::setup()
     SEPS525_OLED::setup();
 
     FixSPI_DMA_IRQ_Prio(&SPI->spiHandle, configLIBRARY_LOWEST_INTERRUPT_PRIORITY - 2);
-/*
+    /*
     for (size_t irq = 0; irq < sizeof(list) / sizeof(IRQn_Type); ++irq)
         NVIC_SetPriority(list[irq], configLIBRARY_LOWEST_INTERRUPT_PRIORITY - 1);
         */
@@ -72,12 +72,17 @@ void SEP525_DMA_FreeRTOS::setup()
 
 void SEP525_DMA_FreeRTOS::set_region(int x, int y, int w, int h)
 {
+    set_region(x, y, w, h, x, y);
+}
+
+void SEP525_DMA_FreeRTOS::set_region(int x, int y, int w, int h, int start_x, int start_y)
+{
     if ((w == 1) && (h == 1)){
         if (!currentRegion.contains(x, y)) {
             currentRegion.fill();
             set_region(currentRegion);
         }
-        set_start_pos(x, y);
+        set_start_pos(start_x, start_y);
     } else {
         if (!currentRegion.compare(x, y, x + w, y + h)) {
             currentRegion.update(x, y, x + w, y + h);
@@ -128,6 +133,20 @@ void SEP525_DMA_FreeRTOS::drawImage(const uint16_t *data, uint16_t x, uint16_t y
     set_region(x, y, w, h);
     datastart();
     SPI->transfer16((uint16_t*)data, nullptr, image_size, DMA_callback);
+    xSemaphoreTake(mutex, portMAX_DELAY);
+    dataend();
+}
+
+void SEP525_DMA_FreeRTOS::drawFragment(
+        const uint16_t *data, size_t size_bytes, uint16_t x, uint16_t y,
+        uint16_t w, uint16_t h, uint16_t start_x, uint16_t start_y)
+{
+    if (!size_bytes)
+        return;
+
+    set_region(x, y, w, h, start_x, start_y);
+    datastart();
+    SPI->transfer16((uint16_t*)data, nullptr, size_bytes, DMA_callback);
     xSemaphoreTake(mutex, portMAX_DELAY);
     dataend();
 }

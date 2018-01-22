@@ -1,6 +1,9 @@
 #ifndef DISPLAYCONTROLLER_H
 #define DISPLAYCONTROLLER_H
 
+#include <stdlib.h>
+#include <stdint.h>
+
 class SdFat;
 class SEP525_DMA_FreeRTOS;
 
@@ -18,6 +21,12 @@ private:
 
 public:
     static void DisplayControllerThread(void *args);
+
+    void DisplayWriten(size_t bytes);
+    uint32_t nextOffset() const;
+
+private:
+    IPipeLine* tail;
 };
 
 #endif // DISPLAYCONTROLLER_H
