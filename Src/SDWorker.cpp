@@ -6,6 +6,7 @@
 #include "AltSDFAtSPIDriver.h"
 #include "SDWorker.h"
 #include "io_pin.h"
+#include <DisplayController.h>
 
 
 FakePrint Serial;
@@ -28,7 +29,7 @@ void SDWorkerThread(void *arg)
     sd.begin();
 
     while(1) {
-        FSCommand* c;
+        IPipeLine* c;
         if (xQueueReceive(inq, &c, portMAX_DELAY)) {
             if (c->processFS(sd))
                 while(xQueueSendToBack(outq, &c, portMAX_DELAY) == errQUEUE_FULL);

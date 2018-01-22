@@ -11,14 +11,10 @@
 #include <task.h>
 #include <queue.h>
 
-// interface
-class PipeLine : public FSCommand, DispayCommand {};
-//
-
 //////////////////////////////////
 
 template<int FragmentSize>
-class RawImageDisplayer : public PipeLine {
+class RawImageDisplayer : public IPipeLine {
 public:
     RawImageDisplayer(DisplayController* controlle) {
         this->controller = controller;
@@ -46,13 +42,17 @@ protected:
 
 //////////////////////////////////
 
+
+
+/////////////////////////////////
+
 void DisplayController::DisplayControllerThread(void *args)
 {
     DisplayController _controller;
 
     // create queues
-    auto fs_queue       = xQueueCreate(1, sizeof(PipeLine*));
-    auto display_queue  = xQueueCreate(1, sizeof(PipeLine*));
+    auto fs_queue       = xQueueCreate(1, sizeof(IPipeLine*));
+    auto display_queue  = xQueueCreate(1, sizeof(IPipeLine*));
 
     std::function<void(QueueHandle_t&, QueueHandle_t&)> fs_queue_getter =
             [=](QueueHandle_t &r_fs_queue, QueueHandle_t &r_display_queue)
@@ -68,7 +68,7 @@ void DisplayController::DisplayControllerThread(void *args)
     xTaskCreate(SDWorkerThread, "DisplayCtrl",
                 configMINIMAL_STACK_SIZE * 2 + 512, &fs_queue_getter, tskIDLE_PRIORITY + 3, NULL);
 
-    PipeLine *cmd = new RawImageDisplayer<512>(&_controller);
+    auto cmd = new RawImageDisplayer<512>(&_controller);
 
     while(1) {
         while(xQueueSendToBack(fs_queue, &cmd, portMAX_DELAY) == errQUEUE_FULL);

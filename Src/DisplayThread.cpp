@@ -2,6 +2,7 @@
 #include <queue.h>
 #include <memory>
 #include <functional>
+#include "DisplayController.h"
 
 #include "SEP525_DMA_FreeRTOS.h"
 
@@ -18,7 +19,7 @@ void DisplayThreadFunc(void* arg)
     display->begin();
 
     while (1) {
-        DispayCommand* p;
+        IPipeLine* p;
         if (xQueueReceive(commandQueue, &p, portMAX_DELAY)) {
             p->processDisplay(*display);
         }
