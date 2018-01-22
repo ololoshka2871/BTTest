@@ -11,6 +11,21 @@
 #define DMA_TRESHOLD 16
 #endif
 
+class Rectungle {
+public:
+    int x1, x2, y1, y2;
+    Rectungle(int  x1 = 0, int y1 = 0, int x2 = 0, int y2 = 0) {
+        this->x1 = x1;
+        this->x2 = x2;
+        this->y1 = y1;
+        this->y2 = y2;
+    }
+
+    size_t size() const;
+    size_t width() const;
+    size_t heigth() const;
+};
+
 class SEP525_DMA_FreeRTOS : public SEPS525_OLED {
 private:
     class Region {

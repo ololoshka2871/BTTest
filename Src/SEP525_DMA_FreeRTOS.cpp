@@ -150,3 +150,18 @@ void SEP525_DMA_FreeRTOS::drawFragment(
     xSemaphoreTake(mutex, portMAX_DELAY);
     dataend();
 }
+
+size_t Rectungle::size() const
+{
+    return heigth() * width();
+}
+
+size_t Rectungle::width() const
+{
+    return abs(x2 - x1);
+}
+
+size_t Rectungle::heigth() const
+{
+    return abs(y2 - y1);
+}

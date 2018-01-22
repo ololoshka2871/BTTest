@@ -4,7 +4,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
+
 class SdFat;
+class Rectungle;
 class SEP525_DMA_FreeRTOS;
 
 class IPipeLine {
@@ -22,11 +27,10 @@ private:
 public:
     static void DisplayControllerThread(void *args);
 
-    void DisplayWriten(size_t bytes);
-    uint32_t nextOffset() const;
+    void LoadImage(const char* path, const Rectungle &pos);
 
 private:
-    IPipeLine* tail;
+    QueueHandle_t fs_queue, display_queue;
 };
 
 #endif // DISPLAYCONTROLLER_H
