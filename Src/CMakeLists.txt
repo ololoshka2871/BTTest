@@ -92,6 +92,9 @@ SET(SOURCE_FILES
         SDWorker.h
 
         IThread.h
+
+        IMGData.cpp
+        IMGData.h
 )
 
 INCLUDE_DIRECTORIES(

@@ -18,8 +18,6 @@ public:
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
     static uint16_t color565(uint8_t r, uint8_t g, uint8_t b);
 
-    void setRotation(uint8_t r);
-
 private:
     Pin *pinRS, *pinSS, *pinReset, *pinVddEnable;
 
@@ -32,10 +30,10 @@ protected:
     virtual void datastart(void);
     virtual void data(int value);
     virtual void dataend(void);
-    virtual void set_region(int x, int y, int xs, int ys);
+    virtual void set_region(int x, int y, int w, int h);
     virtual void setup();
     virtual void set_start_pos(int x, int y);
-    virtual void select_region(int xs, int x, int y, int ys);
+    virtual void select_region(int x, int y, int w, int h);
 };
 
 #endif

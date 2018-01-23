@@ -10,7 +10,7 @@ function(Prepare_Images FILES)
     set(products)
     foreach(f ${FILES})
         get_filename_component(fn ${f} NAME_WE)
-        set(png_file    ${CMAKE_CURRENT_BINARY_DIR}/${fn}.png)
+        set(png_file    ${CMAKE_CURRENT_BINARY_DIR}/${fn}.jpg)
         set(rgb565_file ${CMAKE_CURRENT_BINARY_DIR}/${fn}.565)
 
         add_custom_command(

@@ -28,12 +28,14 @@ int main(void)
 
     //initUSB();
 
+#if 0
     // Set up threads
-    //xTaskCreate(DisplayDemo::vDisplayDemoThreadFunc, "Display Task", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
-
+    xTaskCreate(DisplayDemo::vDisplayDemoThreadFunc, "Display Task", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
+#else
     auto displaycontroller = new DisplayController();
     displaycontroller->begin();
     displaycontroller->start();
+#endif
 
 	// Run scheduler and all the threads
     vTaskStartScheduler();

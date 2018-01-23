@@ -81,25 +81,57 @@ void SEP525_DMA_FreeRTOS::set_region(int x, int y, int w, int h, int start_x, in
     } else {
         if (!currentRegion.compare(x, y, x + w, y + h)) {
             currentRegion.update(x, y, x + w, y + h);
-            set_region(currentRegion);
+            select_region(currentRegion);
         }
+        set_start_pos(start_x, start_y);
+    }
+}
+
+void SEP525_DMA_FreeRTOS::set_start_pos(int x, int y)
+{
+    switch (rotation) { // по часовой
+    case 0:
+        reg(0x20, x);
+        reg(0x21, y);
+        break;
+    case 1:
+        reg(0x20, height() - y); // x
+        reg(0x21, x); // y
+        break;
+    case 2:
+        reg(0x20, width() - x);
+        reg(0x21, height() - y);
+        break;
+    case 3:
+        reg(0x20, y); // x
+        reg(0x21, width() - x); // y
+        break;
     }
 }
 
 void SEP525_DMA_FreeRTOS::select_region(const SEP525_DMA_FreeRTOS::Region &region)
 {
-    reg(0x17,region.x);
-    reg(0x18,region.xs-1);
-    reg(0x19,region.y);
-    reg(0x1a,region.ys-1);
+    switch (rotation) { // по часовой
+    case 0:
+    case 2:
+        reg(0x17,region.x);
+        reg(0x18,region.xs - 1);
+        reg(0x19,region.y);
+        reg(0x1a,region.ys - 1);
+        break;
+    case 1:
+    case 3:
+        reg(0x17,region.y);
+        reg(0x18,region.ys - 1);
+        reg(0x19,region.x);
+        reg(0x1a,region.xs - 1);
+        break;
+    }
 }
 
 void SEP525_DMA_FreeRTOS::set_region(const SEP525_DMA_FreeRTOS::Region &region)
 {
-    // draw region
     select_region(region);
-
-    // start position
     set_start_pos(region.x, region.y);
 }
 
@@ -157,7 +189,33 @@ void SEP525_DMA_FreeRTOS::drawFragment(
 
 void SEP525_DMA_FreeRTOS::drawFragment(const uint16_t *data, size_t size_bytes, const Rectungle &rect, uint16_t start_x, uint16_t start_y)
 {
-    drawFragment(data, size_bytes, rect.x1(), rect.y1(), rect.width(), rect.heigth(), start_x, start_y);
+    drawFragment(data, size_bytes, rect.x1(), rect.y1(),
+                 rect.width(), rect.heigth(),
+                 start_x, start_y);
+}
+
+void SEP525_DMA_FreeRTOS::setRotation(uint8_t r)
+{
+    const uint8_t transfer_method = 0x60;
+
+    Adafruit_GFX::setRotation(r);
+    currentRegion = Region(width(), height());
+
+    // HC VC HV
+    switch (rotation & 3) {
+    case 0: // normal
+        reg(0x16, transfer_method | 0x06);
+        break;
+    case 1: // -90
+        reg(0x16, transfer_method | 0x03);
+        break;
+    case 2: // 180
+        reg(0x16, transfer_method | 0x00);
+        break;
+    case 3: // +90
+        reg(0x16, transfer_method | 0x05);
+        break;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////

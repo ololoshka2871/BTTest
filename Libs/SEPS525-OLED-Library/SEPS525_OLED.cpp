@@ -39,20 +39,17 @@ void SEPS525_OLED::set_start_pos(int x, int y)
     reg(0x21,y);
 }
 
-void SEPS525_OLED::select_region(int xs, int x, int y, int ys)
+void SEPS525_OLED::select_region(int x, int y, int w, int h)
 {
     reg(0x17,x);
-    reg(0x18,x+xs-1);
+    reg(0x18,x + w - 1);
     reg(0x19,y);
-    reg(0x1a,y+ys-1);
+    reg(0x1a,y + h - 1);
 }
 
-void SEPS525_OLED::set_region(int x, int y, int xs, int ys)
+void SEPS525_OLED::set_region(int x, int y, int w, int h)
 {
-    // draw region
-    select_region(xs, x, y, ys);
-
-    // start position
+    select_region(x, y, w, h);
     set_start_pos(x, y);
 }
 
@@ -114,7 +111,8 @@ void SEPS525_OLED::seps525_init(void)
     // rgb_if
     reg(0x14, 0x31);
     // memory write mode
-    reg(0x16, 0x66);
+    setRotation(0);
+    //reg(0x16, 0x66);
 
     // driving current r g b (uA)
     reg(0x10, 0x45);
@@ -197,19 +195,4 @@ void SEPS525_OLED::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t
 uint16_t SEPS525_OLED::color565(uint8_t r, uint8_t g, uint8_t b)
 {
     return (r << 11) | (g << 5) | b;
-}
-
-void SEPS525_OLED::setRotation(uint8_t r)
-{
-    Adafruit_GFX::setRotation(r);
-    switch (rotation & 3) {
-    case 0: // normal
-        break;
-    case 1:
-        break;
-    case 2:
-        break;
-    case 3:
-        break;
-    }
 }

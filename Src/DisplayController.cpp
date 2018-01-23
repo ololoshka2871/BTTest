@@ -14,7 +14,7 @@
 #include <SerialDebugLogger.h>
 
 
-#define IO_BLOCK_SIZE   512
+#define IO_BLOCK_SIZE   768
 
 //////////////////////////////////
 
@@ -61,14 +61,15 @@ public:
 
         return true;
 
-        fail:
+fail:
         file->close();
         return false;
     }
 
     void processDisplay(SEP525_DMA_FreeRTOS& display) {
         display.drawFragment((const uint16_t*)buf, read, position,
-                             position.offset2columnAbs(offset), position.offset2columnAbs(offset));
+                             position.offset2columnAbs(offset),
+                             position.offset2rowAbs(offset));
     }
 
 protected:
@@ -79,6 +80,48 @@ protected:
     const uint8_t bytesPrePixel;
 
     uint8_t buf[FragmentSize];
+};
+
+/////////////////////////////////
+
+class DrawRectCMD : public IPipeLine {
+public:
+    DrawRectCMD(const Rectungle& rect, uint16_t color)
+        : rect(rect), color(color)
+    {
+    }
+
+    void processDisplay(SEP525_DMA_FreeRTOS& display) {
+        for (int i = 0; i < 10; ++i) {
+            display.drawPixel(i, i, color);
+        }
+        //display.drawRect(rect.x1(), rect.y1(), rect.width(), rect.heigth(), color);
+    }
+
+private:
+    Rectungle rect;
+    uint16_t color;
+};
+
+/////////////////////////////////
+
+
+#include "IMGData.h"
+
+class imgdisplayer : public IPipeLine {
+public:
+    imgdisplayer(const imgdata* data, int x, int y)
+        :x(x), y(y), data(data)
+    {
+    }
+
+    void processDisplay(SEP525_DMA_FreeRTOS& display) {
+        display.drawImage((const uint16_t *)data->pixel_data, x, y, data->width, data->height);
+    }
+
+private:
+    int x, y;
+    const imgdata* data;
 };
 
 /////////////////////////////////
@@ -118,6 +161,26 @@ uint32_t DisplayController::LoadImage(std::shared_ptr<FatFile> &file, const Rect
     return micros() - start;
 }
 
+uint32_t DisplayController::DrawRectungle(const Rectungle &rect, uint16_t color)
+{
+    const uint32_t start = micros();
+
+    auto cmd = new DrawRectCMD(rect, color);
+    while(xQueueSendToBack(fs_queue, &cmd, portMAX_DELAY) == errQUEUE_FULL);
+
+    return micros() - start;
+}
+
+uint32_t DisplayController::DrawImage(const imgdata* data, int x, int y)
+{
+    const uint32_t start = micros();
+
+    auto cmd = new imgdisplayer(data, x, y);
+    while(xQueueSendToBack(fs_queue, &cmd, portMAX_DELAY) == errQUEUE_FULL);
+
+    return micros() - start;
+}
+
 void DisplayController::run()
 {
     sdthread->begin();
@@ -126,25 +189,59 @@ void DisplayController::run()
     dispthread->start();
     sdthread->start();
 
+    dispthread->getDisplay().setRotation(2);
+
     FatFile baseDir;
     std::shared_ptr<FatFile> file(new FatFile);
 
+    uint16_t color = 0;
+
     while(1) {
+#if 0
         if (!baseDir.isOpen()) {
             if (!baseDir.open("/1"))
                 continue;
         }
+
+        if (!file->open(&baseDir, "test1.565", O_READ))
+            continue;
+
+        /*
         if (!file->openNext(&baseDir, O_READ)) {
             baseDir.seekSet(0);
             continue;
         }
+        */
 
-        uint32_t time = LoadImage(file, Rectungle(0, 0, 160, 128));
+        uint32_t time = LoadImage(file,
+                                  Rectungle(
+                          #if 1
+                                      0, 0,
+                                      dispthread->getDisplay().width(),
+                                      dispthread->getDisplay().height())
+                          #else
+                                      20, 20,
+                                      100,
+                                      100)
+                          #endif
+                                  );
         serialDebugWrite("Load img took %d ticks\n\r", time);
         vTaskDelay(1000);
+#elif 0
+        DrawRectungle(Rectungle(10, 10, 20, 20), color);
+
+        color += (1 << 0) | (1 << 5) | (1 << 11);
+        vTaskDelay(100);
+#elif 1
+        auto d = dispthread->getDisplay();
+        d.drawLine(0, 0, d.width(), d.height(), 0x0);
+        d.drawLine(0, d.width(), 0, d.height(), 0x0);
+        vTaskDelay(500);
+#endif
     }
 }
 
+//////////////////////////////////
 
 
 

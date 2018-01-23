@@ -161,6 +161,7 @@ public:
     virtual void drawFragment(const uint16_t *data, size_t size_bytes,
                            const Rectungle& rect, uint16_t start_x, uint16_t start_y);
     constexpr size_t BytesPrePixel() const { return sizeof(uint16_t); }
+    void setRotation(uint8_t r);
 
 protected:
     void setup();
@@ -173,6 +174,7 @@ protected:
 
     virtual void send_fill_color(uint16_t color, uint32_t size);
 
+    void set_start_pos(int x, int y);
 private:
     Region currentRegion;
 };
