@@ -35,9 +35,6 @@ public:
     bool isPixelInside(uint32_t point_n) const;
     uint32_t PixelsRemaning(uint32_t position) const;
 
-    uint32_t offset2column(uint32_t offset) const;
-    uint32_t offset2row(uint32_t offset) const;
-
     uint32_t offset2columnAbs(uint32_t offset) const;
     uint32_t offset2rowAbs(uint32_t offset) const;
 
@@ -162,6 +159,8 @@ public:
                            const Rectungle& rect, uint16_t start_x, uint16_t start_y);
     constexpr size_t BytesPrePixel() const { return sizeof(uint16_t); }
     void setRotation(uint8_t r);
+
+    Rectungle geomety() const;
 
 protected:
     void setup();

@@ -1,8 +1,5 @@
 #include <Arduino_FreeRTOS.h>
 
-#include "Screens/ScreenManager.h"
-#include "GPS/GPSThread.h"
-
 #include "BoardInit.h"
 #include "LEDThread.h"
 #include "ButtonsThread.h"

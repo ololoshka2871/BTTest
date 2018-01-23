@@ -4,6 +4,10 @@
 
 #include "DisplayController.h"
 #include "SEP525_DMA_FreeRTOS.h"
+#include "RawImageLoader.h"
+
+#include "Screens/LogoScreen.h"
+#include "Screens/SelfTestScreen.h"
 
 #include <SdFat.h>
 #include <FatLib/FatFile.h>
@@ -14,75 +18,9 @@
 #include <SerialDebugLogger.h>
 
 
-#define IO_BLOCK_SIZE   768
+#define IO_BLOCK_SIZE   512
 
 //////////////////////////////////
-
-template<int FragmentSize>
-class RawImageLoader : public IPipeLine {
-public:
-    RawImageLoader(DisplayController* controller,
-                   const std::shared_ptr<FatFile> &file,
-                   const Rectungle& rect,
-                   const uint32_t offset,
-                   const uint8_t bytesPrePixel = 1)
-        : file(file), position(rect), bytesPrePixel(bytesPrePixel)
-    {
-        this->controller = controller;
-        this->offset = offset;
-        read = 0;
-    }
-
-    bool processFS(SdFat& fs) {
-        if (!file->isOpen())
-            return false;
-
-        volatile uint32_t points_to_read;
-        uint32_t bytes_to_read;
-
-        if (!file->seekSet(offset))
-            goto fail;
-
-        points_to_read = position.PixelsRemaning(offset / bytesPrePixel);
-        if (points_to_read <= 0) {
-            goto fail;
-        }
-        bytes_to_read = min(
-                    min(file->available(), points_to_read * bytesPrePixel),
-                    FragmentSize);
-
-        read = file->read(buf, bytes_to_read);
-        if (read < 0)
-            goto fail;
-
-        points_to_read = position.PixelsRemaning((offset + read) / bytesPrePixel);
-        if (points_to_read == 0)
-            file->close();
-
-        return true;
-
-fail:
-        file->close();
-        return false;
-    }
-
-    void processDisplay(SEP525_DMA_FreeRTOS& display) {
-        display.drawFragment((const uint16_t*)buf, read, position,
-                             position.offset2columnAbs(offset),
-                             position.offset2rowAbs(offset));
-    }
-
-protected:
-    DisplayController *controller;
-    std::shared_ptr<FatFile> file;
-    uint32_t offset, read;
-    Rectungle position;
-    const uint8_t bytesPrePixel;
-
-    uint8_t buf[FragmentSize];
-};
-
-/////////////////////////////////
 
 class DrawRectCMD : public IPipeLine {
 public:
@@ -127,7 +65,7 @@ private:
 /////////////////////////////////
 
 DisplayController::DisplayController()
-    : IThread(configMINIMAL_STACK_SIZE + 128, "Controller", tskIDLE_PRIORITY + 5)
+    : IThread(configMINIMAL_STACK_SIZE + 128, "Controller", tskIDLE_PRIORITY + 5), screensBase(new FatFile)
 {
     fs_queue       = xQueueCreate(1, sizeof(IPipeLine*));
     display_queue  = xQueueCreate(1, sizeof(IPipeLine*));
@@ -181,6 +119,15 @@ uint32_t DisplayController::DrawImage(const imgdata* data, int x, int y)
     return micros() - start;
 }
 
+FatFile &DisplayController::getScreensBaseDir() const
+{
+    return *screensBase;
+}
+
+SEP525_DMA_FreeRTOS& DisplayController::getScreen() const {
+    return dispthread->getDisplay();
+}
+
 void DisplayController::run()
 {
     sdthread->begin();
@@ -189,55 +136,30 @@ void DisplayController::run()
     dispthread->start();
     sdthread->start();
 
-    dispthread->getDisplay().setRotation(2);
+    dispthread->getDisplay().setRotation(1);
 
-    FatFile baseDir;
     std::shared_ptr<FatFile> file(new FatFile);
 
-    uint16_t color = 0;
+    screensBase->open("/1");
 
     while(1) {
-#if 0
-        if (!baseDir.isOpen()) {
-            if (!baseDir.open("/1"))
-                continue;
+        {
+            // display logo
+            LogoScreen _logo;
+            _logo.Display(*this);
+            vTaskDelay(3000);
         }
 
-        if (!file->open(&baseDir, "test1.565", O_READ))
-            continue;
-
-        /*
-        if (!file->openNext(&baseDir, O_READ)) {
-            baseDir.seekSet(0);
-            continue;
+        {
+            // self test
+            SelfTestScreen st;
+            st.Display(*this);
+            vTaskDelay(100);
+            getScreen().fillScreen(0xffff);
+            vTaskDelay(10000);
         }
-        */
 
-        uint32_t time = LoadImage(file,
-                                  Rectungle(
-                          #if 1
-                                      0, 0,
-                                      dispthread->getDisplay().width(),
-                                      dispthread->getDisplay().height())
-                          #else
-                                      20, 20,
-                                      100,
-                                      100)
-                          #endif
-                                  );
-        serialDebugWrite("Load img took %d ticks\n\r", time);
-        vTaskDelay(1000);
-#elif 0
-        DrawRectungle(Rectungle(10, 10, 20, 20), color);
-
-        color += (1 << 0) | (1 << 5) | (1 << 11);
-        vTaskDelay(100);
-#elif 1
-        auto d = dispthread->getDisplay();
-        d.drawLine(0, 0, d.width(), d.height(), 0x0);
-        d.drawLine(0, d.width(), 0, d.height(), 0x0);
         vTaskDelay(500);
-#endif
     }
 }
 

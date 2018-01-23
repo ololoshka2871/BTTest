@@ -38,6 +38,13 @@ SET(SOURCE_FILES
 #	Screens/TimeZoneScreen.cpp
 #	Screens/TimeZoneScreen.h
 
+        Screens/Screen.h
+        Screens/LogoScreen.h
+        Screens/LogoScreen.cpp
+
+        Screens/SelfTestScreen.cpp
+        Screens/SelfTestScreen.h
+
 #	8x12Font.cpp
 #	8x12Font.h
         BoardInit.cpp
@@ -95,6 +102,8 @@ SET(SOURCE_FILES
 
         IMGData.cpp
         IMGData.h
+
+        RawImageLoader.h
 )
 
 INCLUDE_DIRECTORIES(

@@ -1,24 +1,14 @@
-#ifndef _SCREEN_H_
-#define _SCREEN_H_
+#ifndef SCREEN_H
+#define SCREEN_H
 
-class Screen
-{
-	Screen * nextScreen;
-	
+#include "DisplayController.h"
+
+class FatFile;
+
+class IScreen {
 public:
-	Screen();
-	//virtual ~Screen() {} //Virtual destructor is intentionally commented as it consumes a lot of RAM/FLASH but will never called
-
-	virtual void drawScreen() const = 0;
-	virtual void drawHeader() const;
-	virtual void onSelButton();
-	virtual void onOkButton();
-	
-	virtual const char * getSelButtonText() const;
-	virtual const char * getOkButtonText() const;
-	
-	Screen * addScreen(Screen * screen);
+    virtual ~IScreen() {}
+    virtual uint32_t Display(DisplayController& controller) = 0;
 };
 
-
-#endif //_SCREEN_H_
+#endif // SCREEN_H

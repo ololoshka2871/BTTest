@@ -95,16 +95,16 @@ void SEP525_DMA_FreeRTOS::set_start_pos(int x, int y)
         reg(0x21, y);
         break;
     case 1:
-        reg(0x20, height() - y); // x
+        reg(0x20, height() - 1 - y); // x
         reg(0x21, x); // y
         break;
     case 2:
-        reg(0x20, width() - x);
-        reg(0x21, height() - y);
+        reg(0x20, width() - 1 - x);
+        reg(0x21, height() - 1 - y);
         break;
     case 3:
         reg(0x20, y); // x
-        reg(0x21, width() - x); // y
+        reg(0x21, width() - 1 - x); // y
         break;
     }
 }
@@ -113,18 +113,28 @@ void SEP525_DMA_FreeRTOS::select_region(const SEP525_DMA_FreeRTOS::Region &regio
 {
     switch (rotation) { // по часовой
     case 0:
-    case 2:
-        reg(0x17,region.x);
-        reg(0x18,region.xs - 1);
-        reg(0x19,region.y);
-        reg(0x1a,region.ys - 1);
+        reg(0x17,region.x); // xstart
+        reg(0x18,region.xs - 1); // xstop
+        reg(0x19,region.y); // ystart
+        reg(0x1a,region.ys - 1); // ystop
         break;
     case 1:
+        reg(0x17,height() - region.ys); // xstart
+        reg(0x18,height() - region.y - 1); // xstop
+        reg(0x19,region.x); // ystart
+        reg(0x1a,region.xs - 1); // ystop
+        break;
+    case 2:
+        reg(0x17, width() - region.xs);
+        reg(0x18, width() - region.x - 1);
+        reg(0x19, height() - region.ys);
+        reg(0x1a, height() - region.y - 1);
+        break;
     case 3:
         reg(0x17,region.y);
         reg(0x18,region.ys - 1);
-        reg(0x19,region.x);
-        reg(0x1a,region.xs - 1);
+        reg(0x19,width() - region.xs);
+        reg(0x1a,width() - region.x - 1);
         break;
     }
 }
@@ -218,6 +228,11 @@ void SEP525_DMA_FreeRTOS::setRotation(uint8_t r)
     }
 }
 
+Rectungle SEP525_DMA_FreeRTOS::geomety() const
+{
+    return Rectungle(0, 0, width(), height());
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 size_t Rectungle::width() const
@@ -243,14 +258,6 @@ bool Rectungle::isPixelInside(uint32_t point_n) const
 uint32_t Rectungle::PixelsRemaning(uint32_t position) const
 {
     return size() - position;
-}
-
-uint32_t Rectungle::offset2column(uint32_t offset) const {
-    return offset % width();
-}
-
-uint32_t Rectungle::offset2row(uint32_t offset) const {
-    return offset / width();
 }
 
 uint32_t Rectungle::offset2columnAbs(uint32_t offset) const
