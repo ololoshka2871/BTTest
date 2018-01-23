@@ -1,4 +1,4 @@
-
+#include <stdlib.h>
 #include "SDWorker.h"
 #include "DisplayThread.h"
 
@@ -19,42 +19,14 @@
 //////////////////////////////////
 
 template<int FragmentSize>
-class RawImageDisplayer : public IPipeLine {
-public:
-    RawImageDisplayer(DisplayController* controller) {
-        this->controller = controller;
-    }
-
-    bool processFS(SdFat& fs) {
-        FatFile f;
-
-        if (!f.open("/1/akne1.565", O_READ))
-            return false;
-        f.seekSet(0);
-        f.read(buf, sizeof(buf));
-        f.close();
-    }
-
-    void processDisplay(SEP525_DMA_FreeRTOS& display) {
-        display.drawImage((uint16_t*)buf, 0, 0, 160, 3);
-    }
-
-protected:
-    DisplayController *controller;
-
-    uint8_t buf[FragmentSize];
-};
-
-//////////////////////////////////
-
-template<int FragmentSize>
 class RawImageLoader : public IPipeLine {
 public:
     RawImageLoader(DisplayController* controller,
                    const std::shared_ptr<FatFile> &file,
                    const Rectungle& rect,
-                   const uint32_t offset)
-        : file(file), position(rect)
+                   const uint32_t offset,
+                   const uint8_t bytesPrePixel = 1)
+        : file(file), position(rect), bytesPrePixel(bytesPrePixel)
     {
         this->controller = controller;
         this->offset = offset;
@@ -65,17 +37,33 @@ public:
         if (!file->isOpen())
             return false;
 
+        volatile uint32_t points_to_read;
+        uint32_t bytes_to_read;
+
         if (!file->seekSet(offset))
-            return false;
+            goto fail;
 
-        read = file->read(buf, min(file->available(), FragmentSize));
+        points_to_read = position.PixelsRemaning(offset / bytesPrePixel);
+        if (points_to_read <= 0) {
+            goto fail;
+        }
+        bytes_to_read = min(
+                    min(file->available(), points_to_read * bytesPrePixel),
+                    FragmentSize);
+
+        read = file->read(buf, bytes_to_read);
         if (read < 0)
-            return false;
+            goto fail;
 
-        if (file->available() == 0)
+        points_to_read = position.PixelsRemaning((offset + read) / bytesPrePixel);
+        if (points_to_read == 0)
             file->close();
 
         return true;
+
+        fail:
+        file->close();
+        return false;
     }
 
     void processDisplay(SEP525_DMA_FreeRTOS& display) {
@@ -88,50 +76,21 @@ protected:
     std::shared_ptr<FatFile> file;
     uint32_t offset, read;
     Rectungle position;
+    const uint8_t bytesPrePixel;
 
     uint8_t buf[FragmentSize];
 };
 
 /////////////////////////////////
 
-void DisplayController::DisplayControllerThread(void *args)
+DisplayController::DisplayController()
+    : IThread(configMINIMAL_STACK_SIZE + 128, "Controller", tskIDLE_PRIORITY + 5)
 {
-    DisplayController _controller;
+    fs_queue       = xQueueCreate(1, sizeof(IPipeLine*));
+    display_queue  = xQueueCreate(1, sizeof(IPipeLine*));
 
-    // create queues
-    _controller.fs_queue       = xQueueCreate(1, sizeof(IPipeLine*));
-    _controller.display_queue  = xQueueCreate(1, sizeof(IPipeLine*));
-
-    DisplayThreadArg display_thread_args = {.rx_queue = _controller.display_queue,
-                                            .rotation = 0
-                                           };
-    SDThreadArg sd_thread_args = { .rx_queue = _controller.fs_queue,
-                                   .tx_queue = _controller.display_queue
-                                 };
-
-    // start DisplayThreadFunc
-    xTaskCreate((TaskFunction_t)DisplayThreadFunc, "DisplayThread",
-                configMINIMAL_STACK_SIZE * 2, &display_thread_args, tskIDLE_PRIORITY + 3, NULL);
-    // start SDWorkerThread
-    xTaskCreate((TaskFunction_t)SDWorkerThread, "DisplayCtrl",
-                configMINIMAL_STACK_SIZE * 2 + 512, &sd_thread_args, tskIDLE_PRIORITY + 3, NULL);
-
-    FatFile baseDir;
-    std::shared_ptr<FatFile> file(new FatFile);
-
-    while(1) {
-        if (!baseDir.isOpen())
-            if (!baseDir.open("/1"))
-                continue;
-        if (!file->openNext(&baseDir, O_READ)) {
-            baseDir.close();
-            continue;
-        }
-
-        uint32_t time = _controller.LoadImage(file, Rectungle(0, 0, 160, 128));
-        serialDebugWrite("Load img took %d ticks\n\r", time);
-        vTaskDelay(1000);
-    }
+    sdthread = SDWorker::instance(fs_queue, display_queue);
+    dispthread = DisplaThread::instance(display_queue);
 }
 
 uint32_t DisplayController::LoadImage(const char *path, const Rectungle& pos)
@@ -145,17 +104,45 @@ uint32_t DisplayController::LoadImage(const char *path, const Rectungle& pos)
 
 uint32_t DisplayController::LoadImage(std::shared_ptr<FatFile> &file, const Rectungle &pos)
 {
-    uint32_t start = micros();
-    size_t toRead = min(file->fileSize(), pos.size());
+    const uint32_t start = micros();
+    const uint8_t bpp = dispthread->getDisplay().BytesPrePixel();
+    size_t toRead = min(file->fileSize(), pos.size() * bpp);
 
     size_t offset = 0;
     while (toRead) {
-        auto cmd = new RawImageLoader<IO_BLOCK_SIZE>(this, file, pos, offset);
+        auto cmd = new RawImageLoader<IO_BLOCK_SIZE>(this, file, pos, offset, bpp);
         while(xQueueSendToBack(fs_queue, &cmd, portMAX_DELAY) == errQUEUE_FULL);
         offset += IO_BLOCK_SIZE;
         toRead = toRead >= IO_BLOCK_SIZE ? toRead - IO_BLOCK_SIZE : 0;
     }
     return micros() - start;
+}
+
+void DisplayController::run()
+{
+    sdthread->begin();
+    dispthread->begin();
+
+    dispthread->start();
+    sdthread->start();
+
+    FatFile baseDir;
+    std::shared_ptr<FatFile> file(new FatFile);
+
+    while(1) {
+        if (!baseDir.isOpen()) {
+            if (!baseDir.open("/1"))
+                continue;
+        }
+        if (!file->openNext(&baseDir, O_READ)) {
+            baseDir.seekSet(0);
+            continue;
+        }
+
+        uint32_t time = LoadImage(file, Rectungle(0, 0, 160, 128));
+        serialDebugWrite("Load img took %d ticks\n\r", time);
+        vTaskDelay(1000);
+    }
 }
 
 

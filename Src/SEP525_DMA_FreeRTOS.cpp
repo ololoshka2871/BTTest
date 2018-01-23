@@ -31,20 +31,20 @@ SEP525_DMA_FreeRTOS *SEP525_DMA_FreeRTOS::instance() {
     return inst;
 }
 
-void SEP525_DMA_FreeRTOS::send_fill_color(uint16_t color, uint32_t size)
+void SEP525_DMA_FreeRTOS::send_fill_color(uint16_t color, uint32_t size_pixels)
 {
     datastart();
 
-    if (size > DMA_TRESHOLD) {
-        SPI->transfer16(color, nullptr, size, DMA_callback);
+    if (size_pixels > DMA_TRESHOLD / BytesPrePixel()) {
+        SPI->transfer16(color, nullptr, size_pixels, DMA_callback);
         xSemaphoreTake(mutex, portMAX_DELAY);
     } else {
         SPI->setDataWidth16(true);
-        uint16_t _b[size];
-        memset16(_b, color, size);
+        uint16_t _b[size_pixels];
+        memset16(_b, color, size_pixels);
         uint32_t DataSize = SPI->spiHandle.Init.DataSize;
         SPI->spiHandle.Init.DataSize = SPI_DATASIZE_16BIT;
-        HAL_SPI_Transmit(&SPI->spiHandle, (uint8_t*)_b, size, 10);
+        HAL_SPI_Transmit(&SPI->spiHandle, (uint8_t*)_b, size_pixels, 10);
         SPI->spiHandle.Init.DataSize = DataSize;
     }
 
@@ -136,46 +136,55 @@ void SEP525_DMA_FreeRTOS::drawFragment(
         const uint16_t *data, size_t size_bytes, uint16_t x, uint16_t y,
         uint16_t w, uint16_t h, uint16_t start_x, uint16_t start_y)
 {
+    uint32_t size_16 = size_bytes / BytesPrePixel();
     if (!size_bytes)
         return;
 
     set_region(x, y, w, h, start_x, start_y);
     datastart();
-    SPI->transfer16((uint16_t*)data, nullptr, size_bytes, DMA_callback);
-    xSemaphoreTake(mutex, portMAX_DELAY);
-
-    if (size_bytes > DMA_TRESHOLD) {
-        SPI->transfer16((uint16_t*)data, nullptr, size_bytes, DMA_callback);
+    if (size_16 > DMA_TRESHOLD) {
+        SPI->transfer16((uint16_t*)data, nullptr, size_16, DMA_callback);
         xSemaphoreTake(mutex, portMAX_DELAY);
     } else {
         SPI->setDataWidth16(true);
         uint32_t DataSize = SPI->spiHandle.Init.DataSize;
         SPI->spiHandle.Init.DataSize = SPI_DATASIZE_16BIT;
-        HAL_SPI_Transmit(&SPI->spiHandle, (uint8_t*)data, size_bytes, 10);
+        HAL_SPI_Transmit(&SPI->spiHandle, (uint8_t*)data, size_16, 10);
         SPI->spiHandle.Init.DataSize = DataSize;
     }
-
     dataend();
 }
 
 void SEP525_DMA_FreeRTOS::drawFragment(const uint16_t *data, size_t size_bytes, const Rectungle &rect, uint16_t start_x, uint16_t start_y)
 {
-    drawFragment(data, size_bytes, rect.x1, rect.y1, rect.width(), rect.heigth(), start_x, start_y);
+    drawFragment(data, size_bytes, rect.x1(), rect.y1(), rect.width(), rect.heigth(), start_x, start_y);
 }
 
-size_t Rectungle::size() const
-{
-    return heigth() * width();
-}
+//////////////////////////////////////////////////////////////////////////////
 
 size_t Rectungle::width() const
 {
-    return abs(x2 - x1);
+    return abs(m_x2 - m_x1);
 }
 
 size_t Rectungle::heigth() const
 {
-    return abs(y2 - y1);
+    return abs(m_y2 - m_y1);
+}
+
+bool Rectungle::isEnd(uint32_t point_n) const
+{
+    return size() == point_n;
+}
+
+bool Rectungle::isPixelInside(uint32_t point_n) const
+{
+    return size() < point_n;
+}
+
+uint32_t Rectungle::PixelsRemaning(uint32_t position) const
+{
+    return size() - position;
 }
 
 uint32_t Rectungle::offset2column(uint32_t offset) const {
@@ -188,10 +197,10 @@ uint32_t Rectungle::offset2row(uint32_t offset) const {
 
 uint32_t Rectungle::offset2columnAbs(uint32_t offset) const
 {
-    return offset % width() + x1;
+    return offset % width() + m_x1;
 }
 
 uint32_t Rectungle::offset2rowAbs(uint32_t offset) const
 {
-    return offset / width() + y1;
+    return offset / width() + m_y1;
 }

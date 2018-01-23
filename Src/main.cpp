@@ -17,6 +17,8 @@
 
 int main(void)
 {
+    // Оставлять в этом стеке используемые объекты нельзя
+
 	InitBoard();
 
     initDebugSerial();
@@ -28,8 +30,10 @@ int main(void)
 
     // Set up threads
     //xTaskCreate(DisplayDemo::vDisplayDemoThreadFunc, "Display Task", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
-    xTaskCreate(DisplayController::DisplayControllerThread, "DisplayCtrl",
-                configMINIMAL_STACK_SIZE * 2, NULL, tskIDLE_PRIORITY + 2, NULL);
+
+    auto displaycontroller = new DisplayController();
+    displaycontroller->begin();
+    displaycontroller->start();
 
 	// Run scheduler and all the threads
     vTaskStartScheduler();

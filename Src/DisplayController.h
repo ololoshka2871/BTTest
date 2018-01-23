@@ -5,14 +5,15 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include <FreeRTOS.h>
-#include <task.h>
+#include "IThread.h"
 #include <queue.h>
 
 class SdFat;
 class Rectungle;
 class SEP525_DMA_FreeRTOS;
 class FatFile;
+class SDWorker;
+class DisplaThread;
 
 class IPipeLine {
 public:
@@ -21,12 +22,11 @@ public:
     virtual ~IPipeLine() {}
 };
 
-class DisplayController
+class DisplayController : public IThread
 {
-private:
-    DisplayController() {}
-
 public:
+    DisplayController();
+
     static void DisplayControllerThread(void *args);
 
     uint32_t LoadImage(const char* path, const Rectungle &pos);
@@ -34,6 +34,11 @@ public:
 
 private:
     QueueHandle_t fs_queue, display_queue;
+    SDWorker *sdthread;
+    DisplaThread *dispthread;
+
+protected:
+    void run();
 };
 
 #endif // DISPLAYCONTROLLER_H

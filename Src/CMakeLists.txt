@@ -90,6 +90,8 @@ SET(SOURCE_FILES
 
         SDWorker.cpp
         SDWorker.h
+
+        IThread.h
 )
 
 INCLUDE_DIRECTORIES(

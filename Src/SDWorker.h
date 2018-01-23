@@ -16,14 +16,33 @@ class FakePrint : public Print
 
 extern FakePrint Serial;
 
-#include <FreeRTOS.h>
+#include "IThread.h"
 #include <queue.h>
 
-struct SDThreadArg
-{
-    QueueHandle_t rx_queue, tx_queue;
-};
+class Pin;
+class SPIClass;
+class SdFat;
 
-void SDWorkerThread(SDThreadArg *arg);
+class SDWorker : public IThread {
+private:
+    SDWorker(QueueHandle_t rx_queue, QueueHandle_t tx_queue);
+
+    Pin* cs;
+    SPIClass* spi;
+    SdFat *sd;
+
+    QueueHandle_t rx_queue, tx_queue;
+
+    static SDWorker* inst;
+
+public:
+    static SDWorker *instance(QueueHandle_t rx_queue, QueueHandle_t tx_queue);
+
+    // call only after shaduler was started!
+    void begin();
+
+protected:
+    void run();
+};
 
 #endif // SDWORKER_H

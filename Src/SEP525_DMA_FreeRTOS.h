@@ -13,29 +13,48 @@
 
 class Rectungle {
 public:
-    int x1, x2, y1, y2;
     Rectungle(int  x1 = 0, int y1 = 0, int x2 = 0, int y2 = 0) {
-        this->x1 = x1;
-        this->x2 = x2;
-        this->y1 = y1;
-        this->y2 = y2;
+        this->m_x1 = x1;
+        this->m_x2 = x2;
+        this->m_y1 = y1;
+        this->m_y2 = y2;
+        recalc_size();
     }
     Rectungle(const Rectungle& src) {
-        this->x1 = src.x1;
-        this->x2 = src.x2;
-        this->y1 = src.y1;
-        this->y2 = src.y2;
+        this->m_x1 = src.m_x1;
+        this->m_x2 = src.m_x2;
+        this->m_y1 = src.m_y1;
+        this->m_y2 = src.m_y2;
+        recalc_size();
     }
 
-    size_t size() const;
+    inline size_t size() const { return m_size; }
     size_t width() const;
     size_t heigth() const;
+    bool isEnd(uint32_t point_n) const;
+    bool isPixelInside(uint32_t point_n) const;
+    uint32_t PixelsRemaning(uint32_t position) const;
 
     uint32_t offset2column(uint32_t offset) const;
     uint32_t offset2row(uint32_t offset) const;
 
     uint32_t offset2columnAbs(uint32_t offset) const;
     uint32_t offset2rowAbs(uint32_t offset) const;
+
+    inline int x1() const { return m_x1; }
+    void setX1(int value) { m_x1 = value; recalc_size(); }
+    inline int x2() const { return m_x2; }
+    void setX2(int value) { m_x2 = value; recalc_size(); }
+
+    inline int y1() const { return m_y1; }
+    void setY1(int value) { m_y1 = value; recalc_size(); }
+    inline int y2() const { return m_y2; }
+    void setY2(int value) { m_y2 = value; recalc_size(); }
+
+private:
+    size_t m_size;
+    int m_x1, m_x2, m_y1, m_y2;
+    inline void recalc_size() { m_size = heigth() * width(); }
 };
 
 class SEP525_DMA_FreeRTOS : public SEPS525_OLED {
@@ -141,6 +160,7 @@ public:
                            uint16_t start_x, uint16_t start_y);
     virtual void drawFragment(const uint16_t *data, size_t size_bytes,
                            const Rectungle& rect, uint16_t start_x, uint16_t start_y);
+    constexpr size_t BytesPrePixel() const { return sizeof(uint16_t); }
 
 protected:
     void setup();
