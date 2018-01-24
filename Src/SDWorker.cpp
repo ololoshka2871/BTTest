@@ -40,7 +40,7 @@ void SDWorker::run()
 {
     while(1) {
         IPipeLine* c;
-        if (xQueueReceive(rx_queue, &c, portMAX_DELAY)) {
+        if (xQueueReceive(rx_queue, &c, portMAX_DELAY) == pdTRUE) {
             if (c->processFS(*sd))
                 while(xQueueSendToBack(tx_queue, &c, portMAX_DELAY) == errQUEUE_FULL);
             else

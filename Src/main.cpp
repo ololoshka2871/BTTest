@@ -7,6 +7,7 @@
 
 #include "displaydemo.h"
 #include "DisplayController.h"
+#include "TENSController.h"
 
 
 int main(void)
@@ -22,6 +23,8 @@ int main(void)
     initButtons();
 
     //initUSB();
+
+    TENSController::instance()->begin();
 
 #if 0
     // Set up threads

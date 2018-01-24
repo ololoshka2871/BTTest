@@ -15,7 +15,9 @@ IO_Pin::IO_Pin(GPIO_TypeDef *port, uint32_t pin_msk) : Pin() {
 }
 
 bool IO_Pin::value() const {
-    return !!LL_GPIO_IsInputPinSet(port, pin);
+    return LL_GPIO_GetPinMode(port, pin) == LL_GPIO_MODE_OUTPUT ?
+                !!LL_GPIO_IsOutputPinSet(port, pin) :
+                !!LL_GPIO_IsInputPinSet(port, pin);
 }
 
 Pin::Direction IO_Pin::direction() const {

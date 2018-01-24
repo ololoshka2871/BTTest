@@ -13,5 +13,7 @@
 #include "@STM32_FAMILY_LONG_l@xx_hal_rcc_ex.h"
 #include "@STM32_FAMILY_LONG_l@xx_hal_cortex.h"
 #include "@STM32_FAMILY_LONG_l@xx_hal_flash.h"
+#include "@STM32_FAMILY_LONG_l@xx_hal_tim.h"
+#include "@STM32_FAMILY_LONG_l@xx_hal_tim_ex.h"
 
 #define CONFIG_UART_BAUD    @UART_BAUD@

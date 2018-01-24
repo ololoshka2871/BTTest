@@ -333,8 +333,8 @@ SET(HAL_SRC
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Inc/${STM32_FAMILY_LONG_lx}_hal_smartcard.h
         STM32generic/system/${STM32_FAMILY_LONG}/HAL_Inc/${STM32_FAMILY_LONG_lx}_hal_spi.h
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Inc/${STM32_FAMILY_LONG_lx}_hal_sram.h
-        #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Inc/${STM32_FAMILY_LONG_lx}_hal_tim.h
-        #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Inc/${STM32_FAMILY_LONG_lx}_hal_tim_ex.h
+        STM32generic/system/${STM32_FAMILY_LONG}/HAL_Inc/${STM32_FAMILY_LONG_lx}_hal_tim.h
+        STM32generic/system/${STM32_FAMILY_LONG}/HAL_Inc/${STM32_FAMILY_LONG_lx}_hal_tim_ex.h
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Inc/${STM32_FAMILY_LONG_lx}_hal_uart.h
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Inc/${STM32_FAMILY_LONG_lx}_hal_usart.h
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Inc/${STM32_FAMILY_LONG_lx}_hal_wwdg.h
@@ -397,8 +397,8 @@ SET(HAL_SRC
         STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_spi.c
         STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_spi_ex.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_sram.c
-        #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_tim.c
-        #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_tim_ex.c
+        STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_tim.c
+        STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_tim_ex.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_uart.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_usart.c
         #STM32generic/system/${STM32_FAMILY_LONG}/HAL_Src/${STM32_FAMILY_LONG_lx}_hal_wwdg.c

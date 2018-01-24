@@ -35,7 +35,7 @@ void DisplaThread::run()
 {
     IPipeLine* p;
     while (1) {
-        if (xQueueReceive(rx_queue, &p, portMAX_DELAY)) {
+        if (xQueueReceive(rx_queue, &p, portMAX_DELAY) == pdTRUE) {
             p->processDisplay(*display);
             delete p;
         }

@@ -107,6 +107,9 @@ SET(SOURCE_FILES
         IMGData.h
 
         RawImageLoader.h
+
+        TENSController.cpp
+        TENSController.h
 )
 
 INCLUDE_DIRECTORIES(

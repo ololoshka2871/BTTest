@@ -4,6 +4,8 @@
 #include <FatLib/FatFile.h>
 #include "ButtonsThread.h"
 
+#include "TENSController.h"
+
 ///////////////////////////////////////////////////////////////////////////
 
 class ExecScreen : public IMenuEntry {
@@ -15,7 +17,11 @@ public:
         if(!file->open(&controller.getScreensBaseDir(), screens[ScreenN], O_READ))
             return 0;
 
-        return controller.LoadImage(file, controller.getScreen().geomety());
+        uint32_t taken = controller.LoadImage(file, controller.getScreen().geomety());
+
+        TENSController::instance()->enable(true);
+
+        return taken;
     }
     IMenuEntry *onButton(const ButtonMessage &msg);
 
@@ -80,8 +86,11 @@ const char* ExecScreen::screens[3] = {
 };
 
 IMenuEntry* ExecScreen::onButton(const ButtonMessage &msg) {
-    if (msg.button == RETURN_BUTTON)
+    if (msg.button == RETURN_BUTTON) {
+        TENSController::instance()->enable(false);
+
         return new Menu1Lvl(ScreenN);
+    }
     else
         return nullptr;
 }

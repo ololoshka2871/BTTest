@@ -146,6 +146,7 @@ void DisplayController::run()
     screensBase->open("/1");
 
     while(1) {
+#if 0
         {
             // display logo
             LogoScreen _logo;
@@ -159,17 +160,19 @@ void DisplayController::run()
             st.Display(*this);
             vTaskDelay(500);
         }
-
+#endif
         {
             std::unique_ptr<IMenuEntry> currentMenuEntry(IMenuEntry::getMenuRoot());
 
             ButtonMessage msg;
+            currentMenuEntry->Display(*this);
             while (true) {
-                currentMenuEntry->Display(*this);
                 if (waitForButtonMessage(&msg, 100)) {
                     IMenuEntry * newEntry = currentMenuEntry->onButton(msg);
-                    if (newEntry)
+                    if (newEntry) {
                         currentMenuEntry.reset(newEntry);
+                        currentMenuEntry->Display(*this);
+                    }
                 }
             }
         }
