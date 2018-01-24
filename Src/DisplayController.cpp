@@ -154,9 +154,7 @@ void DisplayController::run()
             // self test
             SelfTestScreen st;
             st.Display(*this);
-            vTaskDelay(100);
-            getScreen().fillScreen(0xffff);
-            vTaskDelay(10000);
+            vTaskDelay(500);
         }
 
         vTaskDelay(500);

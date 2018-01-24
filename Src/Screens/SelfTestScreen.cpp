@@ -21,6 +21,7 @@ const SelfTestScreen::action SelfTestScreen::action_order[8] = {
 
 void SelfTestScreen::PrintOK(int vpos)
 {
+    screen->setTextColor(green);
     screen->setCursor(100, vpos);
     screen->println("OK");
 }
@@ -45,7 +46,7 @@ void SelfTestScreen::Blink_Warning(bool Display)
 
 void SelfTestScreen::DrawProgressBar()
 {
-    const uint16_t progress_bar_x = 10;
+    const uint16_t progress_bar_x = 20;
     const uint16_t progress_bar_y = 120;
     const uint16_t progress_bar_w = screen->width() - progress_bar_x * 2;
     const uint16_t progress_bar_h = 5;
