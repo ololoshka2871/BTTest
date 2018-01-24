@@ -126,14 +126,14 @@ void TENSController::begin()
     assert(HAL_TIMEx_MasterConfigSynchronization(&tim3, &sMasterConfig) == HAL_OK);
 }
 
-void TENSController::enable(bool enabled)
+void TENSController::enable(bool enable_Led, bool enable_Tens)
 {
-    // start timer
     reset();
-    if (enabled) {
+    // start timers
+    if (enable_Led)
         HAL_TIM_Base_Start_IT(&tim2);
+    if (enable_Tens)
         HAL_TIM_Base_Start_IT(&tim3);
-    }
 }
 
 void TENSController::reset()

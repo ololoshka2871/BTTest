@@ -12,13 +12,13 @@ private:
 public:
     static TENSController *instance();
     void begin();
-    void enable(bool enabled = true);
+    void enable(bool enable_Led = true, bool enable_Tens = true);
     void reset();
     IO_Pin Led_Pin, TENSout_Pin;
     TIM_HandleTypeDef tim2, tim3;
 
     static const uint16_t TENSFreq = 195;
-    static const uint16_t PulseDuration = 1;
+    static const uint16_t PulseDuration = 2;
 
 private:
     static TENSController* inst;

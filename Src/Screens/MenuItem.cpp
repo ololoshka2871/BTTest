@@ -19,7 +19,7 @@ public:
 
         uint32_t taken = controller.LoadImage(file, controller.getScreen().geomety());
 
-        TENSController::instance()->enable(true);
+        TENSController::instance()->enable(true, ScreenN != 0);
 
         return taken;
     }
@@ -55,13 +55,16 @@ public:
                                 (sizeof(menuitemFiles) / sizeof(const char*)));
 
         case SEL_BUTTON:
-            return new ExecScreen(position);
+            if (position != 3)
+                return new ExecScreen(position);
+            else
+                return nullptr;
         default:
             return nullptr;
         }
     }
 
-    static const char* menuitemFiles[3];
+    static const char* menuitemFiles[4];
 
 private:
     uint32_t position;
@@ -75,8 +78,8 @@ IMenuEntry *IMenuEntry::getMenuRoot() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-const char* Menu1Lvl::menuitemFiles[3] = {
-    "akne1.565", "Arthritic-Knee1.565", "cellulite1.565"
+const char* Menu1Lvl::menuitemFiles[4] = {
+    "akne1.565", "Arthritic-Knee1.565", "cellulite1.565", "More_soon.565"
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -87,7 +90,7 @@ const char* ExecScreen::screens[3] = {
 
 IMenuEntry* ExecScreen::onButton(const ButtonMessage &msg) {
     if (msg.button == RETURN_BUTTON) {
-        TENSController::instance()->enable(false);
+        TENSController::instance()->enable(false, false);
 
         return new Menu1Lvl(ScreenN);
     }

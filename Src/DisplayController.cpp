@@ -158,7 +158,7 @@ void DisplayController::run()
                 }
             }
         }
-
+#if 0
         {
             // display logo
             LogoScreen _logo;
@@ -172,7 +172,7 @@ void DisplayController::run()
             st.Display(*this);
             vTaskDelay(500);
         }
-
+#endif
         {
             std::unique_ptr<IMenuEntry> currentMenuEntry(IMenuEntry::getMenuRoot());
 
@@ -190,7 +190,7 @@ void DisplayController::run()
                     }
                 }
             }
-            TENSController::instance()->enable(false);
+            TENSController::instance()->enable(false, false);
 
             // display off (power down)
             getScreen().Backlight(false);

@@ -21,7 +21,7 @@ Connection schematics is TBD. Brief list of connections:
 	D9   	-> PB1
 	RS  	-> PB10
 	CSB  	-> PA4
-	RESETB	->
+        RESETB	-> PB11
 
 # Software used
 
@@ -40,6 +40,7 @@ The project is using Arduino sketches concept. Atmel Studio + Visual Micro plugi
 * Fonts - sources for fonts used in the project
 * Src - application sources
 * Test - unit test and other testing related stuff
+* tools - various scripts
 
 
 # How to build
