@@ -21,7 +21,6 @@ public:
     uint32_t Display(DisplayController& controller);
 
 private:
-    void cyclePoints();
     void PrintOK(int vpos);
     void Blink_Warning(bool Display = true);
     void DrawProgressBar();

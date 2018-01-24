@@ -99,7 +99,7 @@ void SEPS525_OLED::seps525_init(void)
     delay(1);
 
     // display off
-    reg(0x06, 0x00);
+    Backlight(false);
     // turn on internal oscillator using external resistor
     reg(0x02, 0x01);
     // 90 hz frame rate, divider 0
@@ -140,7 +140,7 @@ void SEPS525_OLED::seps525_init(void)
     pinVddEnable->setValue(LOW);
     delay(10);
 
-    reg(0x06, 0x01);
+    //Backlight(true);
 }
 
 SEPS525_OLED::SEPS525_OLED(SPIClass *spi, Pin* pinRS, Pin* pinSS, Pin* pinReset, Pin* pinVddEnable) : Adafruit_GFX(160, 128)
@@ -195,4 +195,9 @@ void SEPS525_OLED::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t
 uint16_t SEPS525_OLED::color565(uint8_t r, uint8_t g, uint8_t b)
 {
     return (r << 11) | (g << 5) | b;
+}
+
+void SEPS525_OLED::Backlight(bool onoff)
+{
+    reg(0x06, onoff ? 0x01 : 0x00);
 }

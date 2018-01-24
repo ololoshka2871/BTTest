@@ -113,13 +113,13 @@ void SelfTestScreen::TestCommon(uint8_t test_num) {
 
     pointsClear();
     for (auto i = 0; i < points_count * smoothing; ++i) {
-        Blink_Warning(i % 2);
+        Blink_Warning(i % 3);
         percent = (test_num * points_count * smoothing + i) * 100 /
                 (sizeof(iv_positions) / sizeof(uint16_t) * points_count * smoothing);
         DrawProgressBar();
         if (i % 2)
             drawPoint(i >> 1);
-        vTaskDelay(350);
+        vTaskDelay(150);
     }
     PrintOK(iv_positions[test_num]);
 }
@@ -144,17 +144,3 @@ uint32_t SelfTestScreen::Display(DisplayController &controller)
     return micros() - start;
 }
 
-void SelfTestScreen::cyclePoints()
-{
-    const uint16_t pointspos_x = 95;
-    const uint16_t pointspos_y = 146;
-
-    screen->fillRect(pointspos_x, pointspos_y, screen->width() - pointspos_x,
-                    screen->height() - pointspos_y, background_color);
-    vTaskDelay(100);
-    screen->setCursor(pointspos_x, pointspos_y);
-    for(auto i = 0; i < 3; ++i) {
-        screen->print('.');
-        vTaskDelay(300 + (i * i * 100));
-    }
-}

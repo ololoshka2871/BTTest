@@ -11,6 +11,7 @@
 #include "Screens/MenuItem.h"
 
 #include "ButtonsThread.h"
+#include "TENSController.h"
 
 #include <SdFat.h>
 #include <FatLib/FatFile.h>
@@ -145,8 +146,19 @@ void DisplayController::run()
 
     screensBase->open("/1");
 
+    ButtonMessage msg;
     while(1) {
-#if 0
+        while (1) {
+            if (waitForButtonMessage(&msg, portMAX_DELAY)) {
+                if (msg.button == POWER_BUTTON &&
+                        (msg.event == BUTTON_LONG_PRESS) ||
+                        (msg.event == BUTTON_VERY_LONG_PRESS)) {
+                    getScreen().Backlight(true);
+                    break;
+                }
+            }
+        }
+
         {
             // display logo
             LogoScreen _logo;
@@ -160,14 +172,17 @@ void DisplayController::run()
             st.Display(*this);
             vTaskDelay(500);
         }
-#endif
+
         {
             std::unique_ptr<IMenuEntry> currentMenuEntry(IMenuEntry::getMenuRoot());
 
-            ButtonMessage msg;
             currentMenuEntry->Display(*this);
-            while (true) {
+            while (1) {
                 if (waitForButtonMessage(&msg, 100)) {
+                    if (msg.button == POWER_BUTTON &&
+                            (msg.event == BUTTON_LONG_PRESS) ||
+                            (msg.event == BUTTON_VERY_LONG_PRESS))
+                        break;
                     IMenuEntry * newEntry = currentMenuEntry->onButton(msg);
                     if (newEntry) {
                         currentMenuEntry.reset(newEntry);
@@ -175,6 +190,10 @@ void DisplayController::run()
                     }
                 }
             }
+            TENSController::instance()->enable(false);
+
+            // display off (power down)
+            getScreen().Backlight(false);
         }
 
         vTaskDelay(500);
