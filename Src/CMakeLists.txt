@@ -78,8 +78,8 @@ SET(SOURCE_FILES
 #       USBDebugLogger.h
         hardfault.cpp
 
-        displaydemo.h
-        displaydemo.cpp
+#       displaydemo.h
+#       displaydemo.cpp
         cpp_new_hook.cpp
         SEP525_DMA_FreeRTOS.cpp
         SEP525_DMA_FreeRTOS.h

@@ -152,35 +152,24 @@ void DisplayController::run()
             _logo.Display(*this);
             vTaskDelay(3000);
         }
-#if 0
+
         {
             // self test
             SelfTestScreen st;
             st.Display(*this);
             vTaskDelay(500);
         }
-#endif
 
         {
-            std::unique_ptr<MenuItem> item(MenuItem::MenuRoot());
+            std::unique_ptr<IMenuEntry> currentMenuEntry(IMenuEntry::getMenuRoot());
 
             ButtonMessage msg;
             while (true) {
-                item->Display(*this);
+                currentMenuEntry->Display(*this);
                 if (waitForButtonMessage(&msg, 100)) {
-                    switch (msg.button) {
-                    case LEFT_BUTTON:
-                        item = item->Prev();
-                        break;
-                    case RIGHT_BUTTON:
-                        item = item->Next();
-                        break;
-                    case SEL_BUTTON:
-
-                        break;
-                    default:
-                        break;
-                    }
+                    IMenuEntry * newEntry = currentMenuEntry->onButton(msg);
+                    if (newEntry)
+                        currentMenuEntry.reset(newEntry);
                 }
             }
         }

@@ -15,7 +15,7 @@ int main(void)
 
 	InitBoard();
 
-    initDebugSerial();
+    //initDebugSerial();
 
 	portENABLE_INTERRUPTS(); // To allow halt() use HAL_Delay()
 

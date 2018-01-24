@@ -4,25 +4,13 @@
 #include <memory>
 #include "Screen.h"
 
-class MenuItem : public IScreen
-{
-private:
-    MenuItem(uint32_t position);
+struct ButtonMessage;
 
+class IMenuEntry : public IScreen {
 public:
-    ~MenuItem() {}
+    virtual IMenuEntry* onButton(const ButtonMessage &msg) = 0;
 
-    uint32_t Display(DisplayController& controller);
-
-    static const char* menuitemFiles[3];
-
-    static std::unique_ptr<MenuItem> MenuRoot();
-
-    std::unique_ptr<MenuItem> Next();
-    std::unique_ptr<MenuItem> Prev();
-
-private:
-    uint32_t position;
+    static IMenuEntry* getMenuRoot();
 };
 
 #endif // MENUITEM_H
