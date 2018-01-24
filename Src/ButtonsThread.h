@@ -7,9 +7,12 @@ typedef uint32_t TickType_t;
 /// ButtonIDs
 enum ButtonID
 {
-	NO_BUTTON,
-	SEL_BUTTON,
-	OK_BUTTON
+    NO_BUTTON = 0,
+    LEFT_BUTTON = 1,
+    RIGHT_BUTTON = 2,
+    SEL_BUTTON = 3,
+    RETURN_BUTTON = 4,
+    POWER_BUTTON = 5,
 };
 
 /// Button event happened

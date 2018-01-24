@@ -1,10 +1,7 @@
 #include <Arduino_FreeRTOS.h>
 
 #include "BoardInit.h"
-#include "LEDThread.h"
 #include "ButtonsThread.h"
-#include "SDThread.h"
-#include "USBDebugLogger.h"
 #include "SerialDebugLogger.h"
 #include "SdMscDriver.h"
 
@@ -22,6 +19,7 @@ int main(void)
 
 	portENABLE_INTERRUPTS(); // To allow halt() use HAL_Delay()
 
+    initButtons();
 
     //initUSB();
 
@@ -29,6 +27,7 @@ int main(void)
     // Set up threads
     xTaskCreate(DisplayDemo::vDisplayDemoThreadFunc, "Display Task", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
 #else
+    xTaskCreate(vButtonsThread, "Buttons Thread", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, NULL);
     auto displaycontroller = new DisplayController();
     displaycontroller->begin();
     displaycontroller->start();

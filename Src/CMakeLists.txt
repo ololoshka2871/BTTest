@@ -45,12 +45,15 @@ SET(SOURCE_FILES
         Screens/SelfTestScreen.cpp
         Screens/SelfTestScreen.h
 
+        Screens/MenuItem.h
+        Screens/MenuItem.cpp
+
 #	8x12Font.cpp
 #	8x12Font.h
         BoardInit.cpp
         BoardInit.h
-#	ButtonsThread.cpp
-#	ButtonsThread.h
+        ButtonsThread.cpp
+        ButtonsThread.h
 ##	FontTest.cpp
 ##	FontTest.h
         FreeRTOSHelpers.h

@@ -4,14 +4,23 @@
 
 #include "USBDebugLogger.h"
 
+#define ACTIVE_LVL  0
+
 // TODO: perhaps it would be reasonable to detect button press via pin change interrupt
 
 // Pins assignment
-const uint32_t SEL_BUTTON_PIN = LL_GPIO_PIN_14;
-const uint32_t OK_BUTTON_PIN = LL_GPIO_PIN_15;
+
+static const uint32_t Buttons[] = {
+    0,              // NO_BUTTON
+    LL_GPIO_PIN_5,  // LEFT_BUTTON
+    LL_GPIO_PIN_9,  // RIGHT_BUTTON
+    LL_GPIO_PIN_6,  // SEL_BUTTON
+    LL_GPIO_PIN_7,  // RETURN_BUTTON
+    LL_GPIO_PIN_8   // POWER_BUTTON
+};
 
 // Timing constants
-const uint32_t DEBOUNCE_DURATION = 1 / portTICK_PERIOD_MS;
+const uint32_t DEBOUNCE_DURATION = 3 / portTICK_PERIOD_MS; // was 1
 const uint32_t LONG_PRESS_DURATION = 500 / portTICK_PERIOD_MS;
 const uint32_t VERY_LONG_PRESS_DURATION = 1000 / portTICK_PERIOD_MS;
 const uint32_t POWER_OFF_POLL_PERIOD = 1000 / portTICK_PERIOD_MS; // Polling very rare when power is off
@@ -24,14 +33,16 @@ QueueHandle_t buttonsQueue;
 // Initialize buttons related stuff
 void initButtons()
 {
-	//enable clock to the GPIOC peripheral
-	__HAL_RCC_GPIOC_IS_CLK_ENABLED();
 
-	// Set up button pins
-	LL_GPIO_SetPinMode(GPIOC, SEL_BUTTON_PIN, LL_GPIO_MODE_INPUT);
-	LL_GPIO_SetPinPull(GPIOC, SEL_BUTTON_PIN, LL_GPIO_PULL_DOWN);
-	LL_GPIO_SetPinMode(GPIOC, OK_BUTTON_PIN, LL_GPIO_MODE_INPUT);
-	LL_GPIO_SetPinPull(GPIOC, OK_BUTTON_PIN, LL_GPIO_PULL_DOWN);
+	//enable clock to the GPIOC peripheral
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    // Set up button pins
+    for (auto i = 1; i < sizeof(Buttons) / sizeof(uint32_t); ++i) {
+        LL_GPIO_SetPinMode(GPIOB, Buttons[i], LL_GPIO_MODE_INPUT);
+        LL_GPIO_SetPinPull(GPIOB, Buttons[i],
+                           ACTIVE_LVL ? LL_GPIO_PULL_DOWN : LL_GPIO_PULL_UP);
+    }
 
 	// Initialize buttons queue
 	buttonsQueue = xQueueCreate(3, sizeof(ButtonMessage)); // 3 clicks more than enough
@@ -41,11 +52,12 @@ void initButtons()
 // Reading button state (perform debounce first)
 inline bool getButtonState(uint32_t pin)
 {
-	if(LL_GPIO_IsInputPinSet(GPIOC, pin))
+
+    if(LL_GPIO_IsInputPinSet(GPIOB, pin) == ACTIVE_LVL)
 	{
 		// dobouncing
 		vTaskDelay(DEBOUNCE_DURATION);
-		if(LL_GPIO_IsInputPinSet(GPIOC, pin))
+        if(LL_GPIO_IsInputPinSet(GPIOB, pin) == ACTIVE_LVL)
 			return true;
 	}
 
@@ -56,13 +68,12 @@ inline bool getButtonState(uint32_t pin)
 /// Return ID of the pressed button (perform debounce first)
 ButtonID getPressedButtonID() 
 {
-	if(getButtonState(SEL_BUTTON_PIN))
-		return SEL_BUTTON;
+    for (uint32_t i = LEFT_BUTTON; i <= POWER_BUTTON; ++i) {
+        if(getButtonState(Buttons[i]))
+            return (ButtonID)i;
+    }
 
-	if(getButtonState(OK_BUTTON_PIN))
-		return OK_BUTTON;
-
-	return NO_BUTTON;
+    return NO_BUTTON;
 }
 
 
@@ -95,7 +106,7 @@ void vButtonsThread(void *pvParameters)
 				msg.event = BUTTON_CLICK;
 
 			// Send the message
-			xQueueSend(buttonsQueue, &msg, 0);
+            xQueueSend(buttonsQueue, &msg, 0);
 		}
 		
 		// TODO: Use different polling periods depending on global system state (off/idle/active)

@@ -8,6 +8,9 @@
 
 #include "Screens/LogoScreen.h"
 #include "Screens/SelfTestScreen.h"
+#include "Screens/MenuItem.h"
+
+#include "ButtonsThread.h"
 
 #include <SdFat.h>
 #include <FatLib/FatFile.h>
@@ -65,7 +68,7 @@ private:
 /////////////////////////////////
 
 DisplayController::DisplayController()
-    : IThread(configMINIMAL_STACK_SIZE + 128, "Controller", tskIDLE_PRIORITY + 5), screensBase(new FatFile)
+    : IThread(configMINIMAL_STACK_SIZE * 3, "Controller", tskIDLE_PRIORITY + 5), screensBase(new FatFile)
 {
     fs_queue       = xQueueCreate(1, sizeof(IPipeLine*));
     display_queue  = xQueueCreate(1, sizeof(IPipeLine*));
@@ -86,7 +89,7 @@ uint32_t DisplayController::LoadImage(const char *path, const Rectungle& pos)
 uint32_t DisplayController::LoadImage(std::shared_ptr<FatFile> &file, const Rectungle &pos)
 {
     const uint32_t start = micros();
-    const uint8_t bpp = dispthread->getDisplay().BytesPrePixel();
+    const uint8_t bpp = getScreen().BytesPrePixel();
     size_t toRead = min(file->fileSize(), pos.size() * bpp);
 
     size_t offset = 0;
@@ -149,12 +152,37 @@ void DisplayController::run()
             _logo.Display(*this);
             vTaskDelay(3000);
         }
-
+#if 0
         {
             // self test
             SelfTestScreen st;
             st.Display(*this);
             vTaskDelay(500);
+        }
+#endif
+
+        {
+            std::unique_ptr<MenuItem> item(MenuItem::MenuRoot());
+
+            ButtonMessage msg;
+            while (true) {
+                item->Display(*this);
+                if (waitForButtonMessage(&msg, 100)) {
+                    switch (msg.button) {
+                    case LEFT_BUTTON:
+                        item = item->Prev();
+                        break;
+                    case RIGHT_BUTTON:
+                        item = item->Next();
+                        break;
+                    case SEL_BUTTON:
+
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
         }
 
         vTaskDelay(500);
