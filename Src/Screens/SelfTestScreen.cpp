@@ -3,6 +3,8 @@
 
 #include "SelfTestScreen.h"
 
+#include "TENSController.h"
+
 #include "SEP525_DMA_FreeRTOS.h"
 
 const uint16_t SelfTestScreen::iv_positions[6] = {55, 65, 75, 85, 95, 105};
@@ -112,6 +114,11 @@ void SelfTestScreen::TestCommon(uint8_t test_num) {
     const uint8_t smoothing = 2;
 
     pointsClear();
+
+    if (test_num == 3 || test_num == 4) {
+        TENSController::instance()->enable(true, false);
+    }
+
     for (auto i = 0; i < points_count * smoothing; ++i) {
         Blink_Warning(i % 3);
         percent = (test_num * points_count * smoothing + i) * 100 /
@@ -121,6 +128,9 @@ void SelfTestScreen::TestCommon(uint8_t test_num) {
             drawPoint(i >> 1);
         vTaskDelay(150);
     }
+
+    TENSController::instance()->enable(false, false);
+
     PrintOK(iv_positions[test_num]);
 }
 
@@ -137,7 +147,7 @@ uint32_t SelfTestScreen::Display(DisplayController &controller)
 
     unsigned long start = micros();
 
-    for (auto i = 0; i < sizeof(action_order) / sizeof(action); ++i) {
+    for (size_t i = 0; i < sizeof(action_order) / sizeof(action); ++i) {
         (*this.*action_order[i])();
     }
 

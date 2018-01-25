@@ -158,7 +158,7 @@ void DisplayController::run()
                 }
             }
         }
-#if 0
+#if 1
         {
             // display logo
             LogoScreen _logo;
