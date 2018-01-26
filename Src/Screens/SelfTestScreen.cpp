@@ -53,10 +53,8 @@ void SelfTestScreen::DrawProgressBar()
     const uint16_t progress_bar_w = screen->width() - progress_bar_x * 2;
     const uint16_t progress_bar_h = 5;
 
-    const uint16_t progress_bar_color = 0xE0C5;
-
-    screen->drawRect(progress_bar_x, progress_bar_y, progress_bar_w, progress_bar_h, progress_bar_color);
-    screen->fillRect(progress_bar_x, progress_bar_y, progress_bar_w * percent / 100, progress_bar_h, progress_bar_color);
+    screen->drawRect(progress_bar_x, progress_bar_y, progress_bar_w, progress_bar_h, pb_color);
+    screen->fillRect(progress_bar_x, progress_bar_y, progress_bar_w * percent / 100, progress_bar_h, pb_color);
 }
 
 void SelfTestScreen::pointsClear()

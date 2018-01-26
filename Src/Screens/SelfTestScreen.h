@@ -14,6 +14,7 @@ public:
     static const uint16_t pointspos_x = 95;
     static const uint16_t pointspos_y = 146;
     static const uint16_t iv_positions[6];
+    static const uint16_t pb_color = 0xC4EC;
 
     SelfTestScreen() { percent = 0; }
     ~SelfTestScreen() {}

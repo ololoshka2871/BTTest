@@ -1,6 +1,8 @@
 #ifndef RAWIMAGELOADER_H
 #define RAWIMAGELOADER_H
 
+#include <SdFat.h>
+
 #include "DisplayController.h"
 #include "SEP525_DMA_FreeRTOS.h"
 
@@ -53,6 +55,10 @@ fail:
     }
 
     void processDisplay(SEP525_DMA_FreeRTOS& display) {
+        // костыль
+        if (read > FragmentSize)
+            return;
+
         uint32_t pixeloffset = offset / display.BytesPrePixel();
         display.drawFragment((const uint16_t*)buf, read, position,
                              position.offset2columnAbs(pixeloffset),

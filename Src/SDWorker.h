@@ -37,6 +37,7 @@ private:
 
 public:
     static SDWorker *instance(QueueHandle_t rx_queue, QueueHandle_t tx_queue);
+    void reset();
 
     // call only after shaduler was started!
     void begin();

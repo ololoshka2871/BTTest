@@ -26,48 +26,6 @@
 
 //////////////////////////////////
 
-class DrawRectCMD : public IPipeLine {
-public:
-    DrawRectCMD(const Rectungle& rect, uint16_t color)
-        : rect(rect), color(color)
-    {
-    }
-
-    void processDisplay(SEP525_DMA_FreeRTOS& display) {
-        for (int i = 0; i < 10; ++i) {
-            display.drawPixel(i, i, color);
-        }
-        //display.drawRect(rect.x1(), rect.y1(), rect.width(), rect.heigth(), color);
-    }
-
-private:
-    Rectungle rect;
-    uint16_t color;
-};
-
-/////////////////////////////////
-
-
-#include "IMGData.h"
-
-class imgdisplayer : public IPipeLine {
-public:
-    imgdisplayer(const imgdata* data, int x, int y)
-        :x(x), y(y), data(data)
-    {
-    }
-
-    void processDisplay(SEP525_DMA_FreeRTOS& display) {
-        display.drawImage((const uint16_t *)data->pixel_data, x, y, data->width, data->height);
-    }
-
-private:
-    int x, y;
-    const imgdata* data;
-};
-
-/////////////////////////////////
-
 DisplayController::DisplayController()
     : IThread(configMINIMAL_STACK_SIZE * 3, "Controller", tskIDLE_PRIORITY + 5), screensBase(new FatFile)
 {
@@ -103,26 +61,6 @@ uint32_t DisplayController::LoadImage(std::shared_ptr<FatFile> &file, const Rect
     return micros() - start;
 }
 
-uint32_t DisplayController::DrawRectungle(const Rectungle &rect, uint16_t color)
-{
-    const uint32_t start = micros();
-
-    auto cmd = new DrawRectCMD(rect, color);
-    while(xQueueSendToBack(fs_queue, &cmd, portMAX_DELAY) == errQUEUE_FULL);
-
-    return micros() - start;
-}
-
-uint32_t DisplayController::DrawImage(const imgdata* data, int x, int y)
-{
-    const uint32_t start = micros();
-
-    auto cmd = new imgdisplayer(data, x, y);
-    while(xQueueSendToBack(fs_queue, &cmd, portMAX_DELAY) == errQUEUE_FULL);
-
-    return micros() - start;
-}
-
 FatFile &DisplayController::getScreensBaseDir() const
 {
     return *screensBase;
@@ -130,6 +68,13 @@ FatFile &DisplayController::getScreensBaseDir() const
 
 SEP525_DMA_FreeRTOS& DisplayController::getScreen() const {
     return dispthread->getDisplay();
+}
+
+void DisplayController::tryResetFs()
+{
+    screensBase->close();
+    sdthread->reset();
+    screensBase->open("/1");
 }
 
 void DisplayController::run()
@@ -141,8 +86,6 @@ void DisplayController::run()
     sdthread->start();
 
     dispthread->getDisplay().setRotation(1);
-
-    std::shared_ptr<FatFile> file(new FatFile);
 
     screensBase->open("/1");
 

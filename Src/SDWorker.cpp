@@ -14,7 +14,7 @@ FakePrint Serial;
 SDWorker* SDWorker::inst = nullptr;
 
 SDWorker::SDWorker(QueueHandle_t rx_queue, QueueHandle_t tx_queue)
-    : IThread(configMINIMAL_STACK_SIZE * 2, "SDWorker"), rx_queue(rx_queue), tx_queue(tx_queue)
+    : IThread(configMINIMAL_STACK_SIZE * 3, "SDWorker"), rx_queue(rx_queue), tx_queue(tx_queue)
 {
     cs = new IO_Pin(GPIOB, LL_GPIO_PIN_12);
     spi = new SPIClass(SPI2);
@@ -25,6 +25,11 @@ SDWorker *SDWorker::instance(QueueHandle_t rx_queue, QueueHandle_t tx_queue)
     if (!inst)
         inst = new SDWorker(rx_queue, tx_queue);
     return inst;
+}
+
+void SDWorker::reset()
+{
+    sd->cardBegin();
 }
 
 void SDWorker::begin()

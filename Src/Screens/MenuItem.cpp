@@ -40,8 +40,11 @@ public:
     uint32_t Display(DisplayController& controller) {
         std::shared_ptr<FatFile> file(new FatFile);
 
-        if(!file->open(&controller.getScreensBaseDir(), menuitemFiles[position], O_READ))
-            return 0;
+        if(!file->open(&controller.getScreensBaseDir(), menuitemFiles[position], O_READ)) {
+            controller.tryResetFs();
+            if(!file->open(&controller.getScreensBaseDir(), menuitemFiles[position], O_READ))
+                return 0;
+        }
 
         return controller.LoadImage(file, controller.getScreen().geomety());
     }

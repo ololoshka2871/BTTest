@@ -32,10 +32,9 @@ public:
 
     uint32_t LoadImage(const char* path, const Rectungle &pos);
     uint32_t LoadImage(std::shared_ptr<FatFile> &file, const Rectungle &pos);
-    uint32_t DrawRectungle(const Rectungle& rect, uint16_t color);
-    uint32_t DrawImage(const imgdata *data, int x, int y);
     FatFile &getScreensBaseDir() const;
     SEP525_DMA_FreeRTOS &getScreen() const;
+    void tryResetFs();
 
 private:
     QueueHandle_t fs_queue, display_queue;
