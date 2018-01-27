@@ -70,8 +70,8 @@ SET(SOURCE_FILES
 #       SdMscDriver.h
 #       SDThread.cpp
 #       SDThread.h
-        SerialDebugLogger.cpp
-        SerialDebugLogger.h
+#       SerialDebugLogger.cpp
+#       SerialDebugLogger.h
 #	TimeFont.cpp
 #	TimeFont.h
 #       USBDebugLogger.cpp

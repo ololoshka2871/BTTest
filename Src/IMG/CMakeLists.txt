@@ -4,6 +4,7 @@ file(GLOB_RECURSE
     IMG_SRC
     FOLLOW_SYMLINKS
     "*.xcf"
+    "*.jpg"
     )
 
 add_custom_target(img_prj SOURCES ${IMG_SRC})

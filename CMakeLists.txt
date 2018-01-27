@@ -16,6 +16,9 @@ set(F_XTAL                 8000000L
 set(UART_BAUD               115200
     CACHE STRING "UART1 BaudRate")
 
+set(MEDICAL_EDITION         NO
+    CACHE  BOOL   "Medic/Cosmetology edition")
+
 # Using Maple's linker script that corresponds maple/stm32duino code
 #SET(STM32_LINKER_SCRIPT ${${CMAKE_PROJECT_NAME}_LIBS_DIR}/STM32generic/variants/BLUEPILL/ldscript_bootloader_2000.ld)
 #LINK_DIRECTORIES(${${CMAKE_PROJECT_NAME}_LIBS_DIR}/STM32generic/variants/BLUEPILL/)
@@ -54,7 +57,14 @@ ADD_DEFINITIONS(
         -DF_CPU=${F_CPU}
         -DHSE_VALUE=${F_XTAL}
 	-DARDUINO=10801
+
 )
+
+if (${MEDICAL_EDITION})
+    ADD_DEFINITIONS(-DMEDICAL_EDITION=1)
+else()
+    ADD_DEFINITIONS(-DMEDICAL_EDITION=0)
+endif()
 
 # Project wide include directories
 INCLUDE_DIRECTORIES(

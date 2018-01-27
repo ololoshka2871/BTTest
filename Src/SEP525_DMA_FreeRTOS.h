@@ -48,6 +48,18 @@ public:
     inline int y2() const { return m_y2; }
     void setY2(int value) { m_y2 = value; recalc_size(); }
 
+    Rectungle& setWidth(size_t newWidth) {
+        m_x2 = m_x1 + newWidth;
+        recalc_size();
+        return *this;
+    }
+
+    Rectungle& setHeight(size_t newHeith) {
+        m_y2 = m_y1 + newHeith;
+        recalc_size();
+        return *this;
+    }
+
 private:
     size_t m_size;
     int m_x1, m_x2, m_y1, m_y2;

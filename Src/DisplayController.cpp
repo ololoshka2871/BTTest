@@ -89,11 +89,15 @@ void DisplayController::run()
 
     screensBase->open("/1");
 
+    IO_Pin Is_dev_powered_on(GPIOA, GPIO_PIN_8);
+    Is_dev_powered_on.setDirection(Pin::D_OUTPUT);
+    Is_dev_powered_on.setValue(LOW);
+
     ButtonMessage msg;
     while(1) {
         while (1) {
             if (waitForButtonMessage(&msg, portMAX_DELAY)) {
-                if (msg.button == POWER_BUTTON &&
+                if ((msg.button == POWER_BUTTON) &&
                         (msg.event == BUTTON_LONG_PRESS) ||
                         (msg.event == BUTTON_VERY_LONG_PRESS)) {
                     getScreen().Backlight(true);
@@ -101,6 +105,8 @@ void DisplayController::run()
                 }
             }
         }
+        Is_dev_powered_on.setValue(HIGH);
+
 #if 1
         {
             // display logo
@@ -117,16 +123,26 @@ void DisplayController::run()
         }
 #endif
         {
+            while (waitForButtonMessage(&msg, 0) == pdTRUE); // consume all button events
+
             std::unique_ptr<IMenuEntry> currentMenuEntry(IMenuEntry::getMenuRoot());
+
+            const uint32_t animation_tick = 10;
 
             currentMenuEntry->Display(*this);
             while (1) {
-                if (waitForButtonMessage(&msg, 100)) {
-                    if (msg.button == POWER_BUTTON &&
+                if (waitForButtonMessage(&msg, animation_tick)) {
+                    if ((msg.button == POWER_BUTTON) &&
                             (msg.event == BUTTON_LONG_PRESS) ||
                             (msg.event == BUTTON_VERY_LONG_PRESS))
                         break;
                     IMenuEntry * newEntry = currentMenuEntry->onButton(msg);
+                    if (newEntry) {
+                        currentMenuEntry.reset(newEntry);
+                        currentMenuEntry->Display(*this);
+                    }
+                } else {
+                    IMenuEntry * newEntry = currentMenuEntry->playAnimation(animation_tick, *this);
                     if (newEntry) {
                         currentMenuEntry.reset(newEntry);
                         currentMenuEntry->Display(*this);
@@ -137,6 +153,7 @@ void DisplayController::run()
 
             // display off (power down)
             getScreen().Backlight(false);
+            Is_dev_powered_on.setValue(LOW);
         }
 
         vTaskDelay(500);
