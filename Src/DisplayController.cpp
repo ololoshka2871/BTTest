@@ -97,9 +97,9 @@ void DisplayController::run()
     while(1) {
         while (1) {
             if (waitForButtonMessage(&msg, portMAX_DELAY)) {
-                if ((msg.button == POWER_BUTTON) &&
+                if ((msg.button == POWER_BUTTON) && (
                         (msg.event == BUTTON_LONG_PRESS) ||
-                        (msg.event == BUTTON_VERY_LONG_PRESS)) {
+                        (msg.event == BUTTON_VERY_LONG_PRESS))) {
                     getScreen().Backlight(true);
                     break;
                 }
@@ -132,9 +132,9 @@ void DisplayController::run()
             currentMenuEntry->Display(*this);
             while (1) {
                 if (waitForButtonMessage(&msg, animation_tick)) {
-                    if ((msg.button == POWER_BUTTON) &&
+                    if ((msg.button == POWER_BUTTON) && (
                             (msg.event == BUTTON_LONG_PRESS) ||
-                            (msg.event == BUTTON_VERY_LONG_PRESS))
+                            (msg.event == BUTTON_VERY_LONG_PRESS)))
                         break;
                     IMenuEntry * newEntry = currentMenuEntry->onButton(msg);
                     if (newEntry) {

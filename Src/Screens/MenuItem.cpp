@@ -167,29 +167,72 @@ static const char* const C2_picture_list[] = {"C_2_2.565", "C_2_3.565", "C_2_4.5
                                               "C_2_9.565", "C_2_A.565"};
 
 
-static const char* const C1[] = {C1_picture_list[0], C1_picture_list[1], C1_picture_list[2],
-                                 #if 1
-                                 C1_picture_list[1], C1_picture_list[0], C1_picture_list[1],
-                                 C1_picture_list[2], C1_picture_list[1], C1_picture_list[0],
-                                 C1_picture_list[3], C1_picture_list[4], C1_picture_list[5], C1_picture_list[6],
-                                 C1_picture_list[3], C1_picture_list[4], C1_picture_list[5], C1_picture_list[6],
-                                 C1_picture_list[3], C1_picture_list[4], C1_picture_list[5], C1_picture_list[6],
-                                 C1_picture_list[7], C1_picture_list[8], C1_picture_list[11], C1_picture_list[12],
-                                 C1_picture_list[7], C1_picture_list[8], C1_picture_list[11], C1_picture_list[12],
-                                 C1_picture_list[7], C1_picture_list[8], C1_picture_list[11], C1_picture_list[12],
-                                 #endif
-                                };
-static const char* const C2[] = {C2_picture_list[0], C2_picture_list[1], C2_picture_list[2], C2_picture_list[3],
-                                 #if 1
-                                 C2_picture_list[0], C2_picture_list[1], C2_picture_list[2], C2_picture_list[3],
-                                 C2_picture_list[0], C2_picture_list[1], C2_picture_list[2], C2_picture_list[3],
-                                 C2_picture_list[0], C2_picture_list[1], C2_picture_list[2], C2_picture_list[3],
-                                 C2_picture_list[4], C2_picture_list[5], C2_picture_list[4], C2_picture_list[5],
-                                 C2_picture_list[4], C2_picture_list[5], C2_picture_list[4], C2_picture_list[5],
-                                 C2_picture_list[7], C2_picture_list[8], C2_picture_list[7], C2_picture_list[8],
-                                 C2_picture_list[7], C2_picture_list[8], C2_picture_list[7], C2_picture_list[8],
-                                 #endif
-                                };
+static const char* const C1[] = {
+    // Left
+    C1_picture_list[1], C1_picture_list[0],
+    C1_picture_list[1], C1_picture_list[0],
+    C1_picture_list[1], C1_picture_list[0],
+    C1_picture_list[1], C1_picture_list[0],
+    C1_picture_list[1], C1_picture_list[0],
+
+    C1_picture_list[3], C1_picture_list[4],
+    C1_picture_list[3], C1_picture_list[4],
+    C1_picture_list[3], C1_picture_list[4],
+    C1_picture_list[3], C1_picture_list[4],
+    C1_picture_list[3], C1_picture_list[4],
+
+    C1_picture_list[7], C1_picture_list[8],
+    C1_picture_list[7], C1_picture_list[8],
+    C1_picture_list[7], C1_picture_list[8],
+    C1_picture_list[7], C1_picture_list[8],
+    C1_picture_list[7], C1_picture_list[8],
+
+    // right
+    C1_picture_list[1], C1_picture_list[2],
+    C1_picture_list[1], C1_picture_list[2],
+    C1_picture_list[1], C1_picture_list[2],
+    C1_picture_list[1], C1_picture_list[2],
+    C1_picture_list[1], C1_picture_list[2],
+
+    C1_picture_list[5], C1_picture_list[6],
+    C1_picture_list[5], C1_picture_list[6],
+    C1_picture_list[5], C1_picture_list[6],
+    C1_picture_list[5], C1_picture_list[6],
+    C1_picture_list[5], C1_picture_list[6],
+
+    C1_picture_list[11], C1_picture_list[12],
+    C1_picture_list[11], C1_picture_list[12],
+    C1_picture_list[11], C1_picture_list[12],
+    C1_picture_list[11], C1_picture_list[12],
+    C1_picture_list[11], C1_picture_list[12],
+};
+static const char* const C2[] = {
+    // left
+    C2_picture_list[0], C2_picture_list[1],
+    C2_picture_list[0], C2_picture_list[1],
+    C2_picture_list[0], C2_picture_list[1],
+    C2_picture_list[0], C2_picture_list[1],
+    C2_picture_list[0], C2_picture_list[1],
+
+    C2_picture_list[4], C2_picture_list[5],
+    C2_picture_list[4], C2_picture_list[5],
+    C2_picture_list[4], C2_picture_list[5],
+    C2_picture_list[4], C2_picture_list[5],
+    C2_picture_list[4], C2_picture_list[5],
+
+    // right
+    C2_picture_list[2], C2_picture_list[3],
+    C2_picture_list[2], C2_picture_list[3],
+    C2_picture_list[2], C2_picture_list[3],
+    C2_picture_list[2], C2_picture_list[3],
+    C2_picture_list[2], C2_picture_list[3],
+
+    C2_picture_list[7], C2_picture_list[8],
+    C2_picture_list[7], C2_picture_list[8],
+    C2_picture_list[7], C2_picture_list[8],
+    C2_picture_list[7], C2_picture_list[8],
+    C2_picture_list[7], C2_picture_list[8],
+};
 
 static const char* M1[] = {"M_1_2.565", "M_1_3.565", "M_1_4.565", "M_1_5.565", "M_1_6.565"};
 
@@ -218,13 +261,6 @@ IMenuEntry *ExecScreen::playAnimation(uint32_t tick, DisplayController& controll
     if (!animation_frame) {
         animation_frame = FPS;
 
-        if (screen_timer > 1)
-            --screen_timer;
-        else {
-            nextScreen(controller);
-            screen_timer = screens[ScreenN].picturesRotationPeriod();
-        }
-
         if (pt.seconds > 0) {
             --pt.seconds;
         } else {
@@ -236,6 +272,13 @@ IMenuEntry *ExecScreen::playAnimation(uint32_t tick, DisplayController& controll
                 TENSController::instance()->enable(false, false);
                 return new Menu1Lvl(ScreenN);
             }
+        }
+
+        if (screen_timer > 1)
+            --screen_timer;
+        else {
+            nextScreen(controller);
+            screen_timer = screens[ScreenN].picturesRotationPeriod();
         }
     } else {
         --animation_frame;
