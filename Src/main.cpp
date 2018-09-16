@@ -1,49 +1,40 @@
 #include <Arduino_FreeRTOS.h>
 
 #include "BoardInit.h"
-#include "ButtonsThread.h"
-#include "SerialDebugLogger.h"
-#include "SdMscDriver.h"
+#include "demo.h"
 
-#include "displaydemo.h"
-#include "DisplayController.h"
-#include "TENSController.h"
+#include <IThread.h>
 
+// запихал ардуино-функции в поток, чтобы и FreeRTOS работал, это  нужно чтобы на скорую руку запустить
+// системный таймер и получать время. + еще там настраиваются приоритеры прерываний и инициализируется
+// менеджмент памяти
+class ArduinoTask : public IThread {
+public:
+    ArduinoTask() : IThread(1024) {}
 
-int main(void)
-{
-    // Оставлять в этом стеке используемые объекты нельзя
+protected:
+    void run() override {
+        _setup();
+        while (1)
+          _loop();
+    }
+} t;
 
-	InitBoard();
+int main(void) {
+  InitBoard(); // тут все по старому
 
-    //initDebugSerial();
+  portENABLE_INTERRUPTS(); // To allow halt() use HAL_Delay()
 
-	portENABLE_INTERRUPTS(); // To allow halt() use HAL_Delay()
+  t.start(); // запускаем единственный поток.
 
-    initButtons();
+  vTaskStartScheduler();
 
-    //initUSB();
-
-    TENSController::instance()->begin();
-
-#if 0
-    // Set up threads
-    xTaskCreate(DisplayDemo::vDisplayDemoThreadFunc, "Display Task", 1024, NULL, tskIDLE_PRIORITY + 2, NULL);
-#else
-    xTaskCreate(vButtonsThread, "Buttons Thread", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 3, NULL);
-    auto displaycontroller = new DisplayController();
-    displaycontroller->begin();
-    displaycontroller->start();
-#endif
-
-	// Run scheduler and all the threads
-    vTaskStartScheduler();
-
-	// Never going to be here
-	return 0;
+  // Never going to be here
+  return 0;
 }
 
 // halt weak
 __attribute__((weak)) void halt(uint8_t status) {
-    while (1) ;
+  while (1)
+    ;
 }

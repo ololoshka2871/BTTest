@@ -153,7 +153,7 @@ SET(STM32GENERIC_SRC
         STM32generic/libraries/stm32_dma/src/stm32_dma.c
 
 	STM32generic/cores/arduino/abi.cpp
-#	STM32generic/cores/arduino/Arduino.h
+        STM32generic/cores/arduino/Arduino.h
 ##	STM32generic/cores/arduino/hooks.c
 ##	STM32generic/cores/arduino/itoa.c
 ##	STM32generic/cores/arduino/itoa.h
@@ -169,7 +169,7 @@ SET(STM32GENERIC_SRC
 #	STM32generic/cores/arduino/syscalls.c
 #	STM32generic/cores/arduino/syscalls.h
 ##	STM32generic/cores/arduino/wiring_private.h
-##	STM32generic/cores/arduino/WMath.cpp
+        STM32generic/cores/arduino/WMath.cpp
 ##	STM32generic/cores/arduino/WString.cpp
 ##	STM32generic/cores/arduino/WString.h
 
@@ -179,7 +179,7 @@ SET(STM32GENERIC_SRC
 #	STM32generic/cores/arduino/stm32/SerialUSB.h
 ##	STM32generic/cores/arduino/stm32/stm32_ADC.c
 ##	STM32generic/cores/arduino/stm32/stm32_build_defines.h
-#	STM32generic/cores/arduino/stm32/stm32_clock.h
+        STM32generic/cores/arduino/stm32/stm32_clock.h
 ##	STM32generic/cores/arduino/stm32/stm32_def.h
         STM32generic/cores/arduino/stm32/stm32_gpio.c
         STM32generic/cores/arduino/stm32/stm32_gpio.h
@@ -187,7 +187,7 @@ SET(STM32GENERIC_SRC
         STM32generic/cores/arduino/stm32/stm32_gpio_af.h
         STM32generic/cores/arduino/stm32/stm32_gpio_af_F0F2F3F4F7L0L1L4.c
         STM32generic/cores/arduino/stm32/stm32_gpio_af_F1.c
-#	STM32generic/cores/arduino/stm32/stm32_gpio_exti.c
+        STM32generic/cores/arduino/stm32/stm32_gpio_exti.c
         STM32generic/cores/arduino/stm32/stm32_init.c # SysTick_Handler THERE!
         STM32generic/cores/arduino/stm32/stm32_pin_list.c
         STM32generic/cores/arduino/stm32/stm32_PWM.c
@@ -430,6 +430,40 @@ TARGET_INCLUDE_DIRECTORIES(HAL PRIVATE
 
 TARGET_COMPILE_DEFINITIONS(HAL PRIVATE
         -DVECT_TAB_OFFSET=${VECT_TAB_ADDR}
+)
+
+SET(SPBTLE_RF_SRC
+    SPBTLE-RF/src/eddystone_beacon.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/hci/hci.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/hci/controller/bluenrg_hal_aci.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/hci/controller/bluenrg_gap_aci.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/hci/controller/bluenrg_updater_aci.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/hci/controller/bluenrg_gatt_aci.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/hci/controller/bluenrg_l2cap_aci.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/hci/controller/bluenrg_utils.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/hci/controller/bluenrg_IFR.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/hci/hci_le.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/utils/gp_timer.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/utils/ble_list.c
+    SPBTLE-RF/src/STM32_BlueNRG/SimpleBlueNRG_HCI/utils/osal.c
+
+    SPBTLE-RF/src/bluenrg_interface.c
+    SPBTLE-RF/src/SPBTLE_RF.cpp
+    SPBTLE-RF/src/sensor_service.cpp
+    SPBTLE-RF/src/beacon_service.cpp
+    )
+
+add_library(SPBTLE_RF STATIC ${SPBTLE_RF_SRC})
+
+target_include_directories(SPBTLE_RF PUBLIC
+    SPBTLE-RF/src
+    FreeRTOS
+    STM32generic/libraries/SPI/src
+    )
+
+TARGET_COMPILE_DEFINITIONS(SPBTLE_RF PUBLIC
+    -DBLUENRG_CONFIG
+    -DBLUENRG_MS=0
 )
 
 SET(LIBS_DIR            ${CMAKE_CURRENT_SOURCE_DIR}             PARENT_SCOPE)

@@ -16,9 +16,6 @@ set(F_XTAL                 8000000L
 set(UART_BAUD               115200
     CACHE STRING "UART1 BaudRate")
 
-set(MEDICAL_EDITION         NO
-    CACHE  BOOL   "Medic/Cosmetology edition")
-
 # Using Maple's linker script that corresponds maple/stm32duino code
 #SET(STM32_LINKER_SCRIPT ${${CMAKE_PROJECT_NAME}_LIBS_DIR}/STM32generic/variants/BLUEPILL/ldscript_bootloader_2000.ld)
 #LINK_DIRECTORIES(${${CMAKE_PROJECT_NAME}_LIBS_DIR}/STM32generic/variants/BLUEPILL/)
@@ -27,7 +24,6 @@ set(MEDICAL_EDITION         NO
 set(STM32_FLASH_ORIGIN "0x08000000"
     CACHE STRING "Flash memory start address")
 
-
 SET(VECT_TAB_ADDR "0x2000")
 
 # Load the toolchain file that uses vars above
@@ -35,7 +31,7 @@ SET(CMAKE_TOOLCHAIN_FILE cmake/gcc_stm32.cmake)
 INCLUDE(cmake/halpers.cmake)
 
 # Project definition
-PROJECT(Rikta)
+PROJECT(BTTest)
 
 # Misc stuff
 ENABLE_LANGUAGE(ASM)
