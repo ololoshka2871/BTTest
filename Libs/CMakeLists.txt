@@ -2,79 +2,6 @@
 #
 # Below each section represents a library with its own settings
 
-
-###################
-# SD card library
-###################
-
-SET(SDFAT_SRC
-	SdFat/BlockDriver.h
-	SdFat/FreeStack.h
-#	SdFat/MinimumSerial.cpp
-#	SdFat/MinimumSerial.h
-	SdFat/SdFat.h
-	SdFat/SdFatConfig.h
-	SdFat/SysCall.h
-
-	SdFat/FatLib/ArduinoFiles.h
-	SdFat/FatLib/ArduinoStream.h
-	SdFat/FatLib/BaseBlockDriver.h
-	SdFat/FatLib/bufstream.h
-	SdFat/FatLib/FatApiConstants.h
-	SdFat/FatLib/FatFile.cpp
-	SdFat/FatLib/FatFile.h
-	SdFat/FatLib/FatFileLFN.cpp
-	SdFat/FatLib/FatFilePrint.cpp
-	SdFat/FatLib/FatFileSFN.cpp
-	SdFat/FatLib/FatFileSystem.h
-	SdFat/FatLib/FatLib.h
-	SdFat/FatLib/FatLibConfig.h
-	SdFat/FatLib/FatStructs.h
-	SdFat/FatLib/FatVolume.cpp
-	SdFat/FatLib/FatVolume.h
-	SdFat/FatLib/FmtNumber.cpp
-	SdFat/FatLib/FmtNumber.h
-#	SdFat/FatLib/fstream.cpp
-#	SdFat/FatLib/fstream.h
-#	SdFat/FatLib/ios.h
-#	SdFat/FatLib/iostream.h
-#	SdFat/FatLib/istream.cpp
-#	SdFat/FatLib/istream.h
-#	SdFat/FatLib/ostream.cpp
-#	SdFat/FatLib/ostream.h
-#	SdFat/FatLib/StdioStream.cpp
-#	SdFat/FatLib/StdioStream.h
-
-	SdFat/SdCard/SdInfo.h
-#	SdFat/SdCard/SdioCard.h
-#	SdFat/SdCard/SdioCardEX.cpp
-#	SdFat/SdCard/SdioTeensy.cpp
-	SdFat/SdCard/SdSpiCard.cpp
-	SdFat/SdCard/SdSpiCard.h
-#	SdFat/SdCard/SdSpiCardEX.cpp
-
-	SdFat/SpiDriver/DigitalPin.h
-	SdFat/SpiDriver/SdSpiBaseDriver.h
-        SdFat/SpiDriver/SdSpiDriver.h
-#	SdFat/SpiDriver/SdSpiESP8266.cpp
-#	SdFat/SpiDriver/SdSpiSAM3X.cpp
-#	SdFat/SpiDriver/SdSpiSTM32F1.cpp
-#       SdFat/SpiDriver/SdSpiSTM32x1.cpp
-#	SdFat/SpiDriver/SdSpiTeensy3.cpp
-#	SdFat/SpiDriver/SoftSPI.h
-)
-ADD_LIBRARY(SDFAT STATIC ${SDFAT_SRC})
-
-TARGET_INCLUDE_DIRECTORIES(SDFAT PRIVATE
-        SdFat
-        STM32generic/libraries/SPI/src   # just for SPISettings
-)
-
-TARGET_COMPILE_DEFINITIONS(SDFAT PRIVATE
-        -DENABLE_ARDUINO_FEATURES=0
-)
-
-
 ###################
 # FreeRTOS
 ###################
@@ -105,16 +32,6 @@ SET(FREERTOS_SRC
 )
 ADD_LIBRARY(FreeRTOS STATIC ${FREERTOS_SRC})
 
-
-
-###################
-# Adafruit GFX library
-###################
-
-ADD_LIBRARY(AdafruitGFX STATIC
-    AdafruitGFX/Adafruit_GFX.cpp
-)
-
 ###################
 # Pin
 ###################
@@ -126,22 +43,6 @@ ADD_LIBRARY(Pin STATIC
 
 TARGET_INCLUDE_DIRECTORIES(Pin PRIVATE
     STM32generic/system/${STM32_FAMILY_LONG}/stm32_chip
-)
-
-###################
-# SEPS525 driver
-###################
-
-ADD_LIBRARY(SEPS525_GFX STATIC
-    SEPS525-OLED-Library/SEPS525_OLED.cpp
-    SEPS525-OLED-Library/SEPS525_OLED.h
-)
-
-TARGET_INCLUDE_DIRECTORIES(SEPS525_GFX PRIVATE
-    AdafruitGFX
-    Pin
-    SEPS525-OLED-Library
-    STM32generic/libraries/SPI/src
 )
 
 ###################
@@ -232,51 +133,6 @@ TARGET_INCLUDE_DIRECTORIES(STM32generic PRIVATE
 TARGET_COMPILE_DEFINITIONS(STM32generic PRIVATE
         -DMENU_USB_SERIAL
 )
-
-###################
-# USB Core and classes
-###################
-
-SET(USB_SRC
-	USB/Core/usbd_conf.c
-	USB/Core/usbd_conf.h
-	USB/Core/usbd_core.c
-	USB/Core/usbd_core.h
-	USB/Core/usbd_ctlreq.c
-	USB/Core/usbd_ctlreq.h
-	USB/Core/usbd_def.h
-	USB/Core/usbd_desc.c
-	USB/Core/usbd_desc.h
-	USB/Core/usbd_ioreq.c
-	USB/Core/usbd_ioreq.h
-
-	USB/CDC/usbd_cdc.c
-	USB/CDC/usbd_cdc.h
-	USB/CDC/usbd_cdc_if.c
-	USB/CDC/usbd_cdc_if.h
-
-	USB/MSC/usbd_msc.c
-	USB/MSC/usbd_msc.h
-	USB/MSC/usbd_msc_bot.c
-	USB/MSC/usbd_msc_bot.h
-	USB/MSC/usbd_msc_data.c
-	USB/MSC/usbd_msc_data.h
-	USB/MSC/usbd_msc_scsi.c
-	USB/MSC/usbd_msc_scsi.h
-
-	USB/MSC_CDC/usbd_msc_cdc.c
-	USB/MSC_CDC/usbd_msc_cdc.h
-)
-ADD_LIBRARY(USB STATIC ${USB_SRC})
-
-TARGET_INCLUDE_DIRECTORIES(USB PRIVATE
-	USB/Core
-	USB/CDC
-	USB/MSC
-	USB/MSC_CDC
-)
-
-
 
 ###################
 # CMSIS and HAL
